@@ -71,7 +71,8 @@ public sealed record ProjectInput(
 public static partial class ProjectFactory
 {
     public const int MaxDevices = 1_000;
-    public const int MaxDeviceMeta = 1_040;
+    public const int MaxReferencedDeviceMeta = 1_040;
+    public const int MaxCommentOnlyDeviceMeta = 100_000;
     public const int MaxTimeChartTargets = 20;
     public const int MaxTrapDefinitions = 20;
     public const int MinPollingIntervalMs = 100;
@@ -350,16 +351,11 @@ public static partial class ProjectFactory
             explicitDataTypesByAddress,
             input.TrapIds);
         var (projectDevices, projectTimeChart, projectTraps) = CommonizeDeviceDataTypes(devices, timeChart, traps);
-        var deviceMetaCount = projectDevices.Select(item => item.Address)
-            .Concat(comments.Select(item => item.Address))
-            .Concat(projectTimeChart.Select(item => item.Address))
-            .Concat(projectTraps.Select(item => item.Address))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Count();
-        if (deviceMetaCount > MaxDeviceMeta)
-        {
-            throw new ArgumentException($"Device metadata can contain up to {MaxDeviceMeta} addresses.");
-        }
+        ValidateDeviceMetaComposition(
+            projectDevices.Select(item => item.Address)
+                .Concat(projectTimeChart.Select(item => item.Address))
+                .Concat(projectTraps.Select(item => item.Address)),
+            comments);
 
         return new PlcProject(
             Id: string.IsNullOrWhiteSpace(input.ProjectId) ? $"{Slugify(name)}-{now}" : input.ProjectId.Trim(),
@@ -370,6 +366,40 @@ public static partial class ProjectFactory
             Traps: projectTraps,
             Comments: comments,
             UpdatedAtEpochMs: now);
+    }
+
+    public static void ValidateDeviceMetaComposition(
+        IEnumerable<string> referencedAddresses,
+        IEnumerable<DeviceCommentDefinition> deviceMeta)
+    {
+        var referenced = new HashSet<string>(referencedAddresses, StringComparer.OrdinalIgnoreCase);
+        if (referenced.Count > MaxReferencedDeviceMeta)
+        {
+            throw new ArgumentException(
+                $"Referenced device metadata can contain up to {MaxReferencedDeviceMeta:N0} addresses.");
+        }
+
+        var commentOnlyAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var meta in deviceMeta)
+        {
+            if (referenced.Contains(meta.Address))
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(meta.Comment))
+            {
+                throw new ArgumentException(
+                    $"Comment-only device metadata requires a non-empty comment: {meta.Address}.");
+            }
+
+            if (commentOnlyAddresses.Add(meta.Address) &&
+                commentOnlyAddresses.Count > MaxCommentOnlyDeviceMeta)
+            {
+                throw new ArgumentException(
+                    $"Comment-only device metadata can contain up to {MaxCommentOnlyDeviceMeta:N0} addresses.");
+            }
+        }
     }
 
     private static List<DeviceCommentDefinition> MergeDeviceComments(

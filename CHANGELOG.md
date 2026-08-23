@@ -13,6 +13,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Tests`: テスト、fixture、検証データ。
 - `Tooling`: ビルド、CLI、開発補助。
 
+## [Unreleased] - 2026-08-23
+
+### Changed
+
+- Project JSON: `deviceMeta` の上限を、List / Time Chart / Trap が参照する正規化済みアドレス1,040件と、参照されないコメント専用アドレス100,000件に分離しました。コメント専用項目は空コメントを許可せず、JSON全体5 MiBの最終上限は維持します。
+- App: Project JSON importでも同じ上限構成を受け入れ、コメント件数が1,040件を超えるだけでは拒否しないようにしました。
+- Docs/Tests: コメント専用`deviceMeta`の条件と上限を仕様書へ追記し、Coreの上限検証を更新しました。
+
 ## [Unreleased] - 2026-08-14
 
 ### Changed

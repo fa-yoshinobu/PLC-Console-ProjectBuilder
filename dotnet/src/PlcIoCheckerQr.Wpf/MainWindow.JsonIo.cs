@@ -536,6 +536,12 @@ public partial class MainWindow
             _traps.Add(row);
         }
 
+        ProjectFactory.ValidateDeviceMetaComposition(
+            _devices.Select(row => row.Address)
+                .Concat(_watches.Select(row => row.Address))
+                .Concat(_traps.Select(row => row.Address)),
+            _comments.Select(row => new DeviceCommentDefinition(row.Address, row.DataType, row.Comment)));
+
         CommonizeDeviceComments();
         CommonizeDeviceDataTypes();
     }
@@ -547,9 +553,13 @@ public partial class MainWindow
         var result = new Dictionary<string, ProjectDeviceMeta>(StringComparer.OrdinalIgnoreCase);
         var deviceMeta = ReadRequiredArray(root, "deviceMeta");
         RequireObjectArrayProperties(deviceMeta, "deviceMeta", "address", "dataType", "comment");
-        if (deviceMeta.GetArrayLength() > ProjectFactory.MaxDeviceMeta)
+        var maxDeviceMetaRows =
+            ProjectFactory.MaxReferencedDeviceMeta + ProjectFactory.MaxCommentOnlyDeviceMeta;
+        if (deviceMeta.GetArrayLength() > maxDeviceMetaRows)
         {
-            throw new InvalidOperationException($"Project JSON deviceMeta can contain up to {ProjectFactory.MaxDeviceMeta} rows.");
+            throw new InvalidOperationException(
+                $"Project JSON deviceMeta can contain up to {ProjectFactory.MaxReferencedDeviceMeta:N0} referenced rows " +
+                $"and {ProjectFactory.MaxCommentOnlyDeviceMeta:N0} comment-only rows.");
         }
         foreach (var meta in deviceMeta.EnumerateArray())
         {

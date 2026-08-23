@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PlcIoCheckerQr.Core;
 
 namespace PlcIoCheckerQr.Core.Tests;
@@ -176,16 +177,53 @@ public sealed class ProjectFactoryTests
     }
 
     [Fact]
-    public void MakeProjectRejectsDeviceAndMetadataCountsAboveCommonLimits()
+    public void MakeProjectRejectsDeviceCountAboveCommonLimit()
     {
         var devices = string.Join("\n", Enumerable.Range(0, ProjectFactory.MaxDevices + 1).Select(index => $"D{index},Int16"));
         Assert.Throws<ArgumentException>(() => ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
             DevicesText: devices)));
+    }
 
-        var comments = string.Join("\n", Enumerable.Range(0, ProjectFactory.MaxDeviceMeta + 1).Select(index => $"D{index},Int16,Comment {index}"));
-        Assert.Throws<ArgumentException>(() => ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
+    [Fact]
+    public void MakeProjectAllowsCommentOnlyMetadataBeyondReferencedLimit()
+    {
+        var comments = string.Join("\n", Enumerable.Range(0, ProjectFactory.MaxReferencedDeviceMeta + 1)
+            .Select(index => $"D{index},Int16,Comment {index}"));
+
+        var project = ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
             DevicesText: "",
-            CommentsText: comments)));
+            CommentsText: comments));
+
+        Assert.Equal(ProjectFactory.MaxReferencedDeviceMeta + 1, project.Comments.Count);
+        using var document = JsonDocument.Parse(ProjectQrPayload.ProjectQrJsonBytes(project));
+        Assert.Equal(
+            ProjectFactory.MaxReferencedDeviceMeta + 1,
+            document.RootElement.GetProperty("deviceMeta").GetArrayLength());
+        Assert.NotEmpty(ProjectQrPayload.EncodeProjectChunks(project, chunkSize: 1_000));
+    }
+
+    [Fact]
+    public void MakeProjectRejectsBlankCommentOnlyMetadata()
+    {
+        var exception = Assert.Throws<ArgumentException>(() => ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
+            DevicesText: "",
+            CommentsText: "D100,Int16,")));
+
+        Assert.Contains("requires a non-empty comment", exception.Message);
+    }
+
+    [Fact]
+    public void DeviceMetaCompositionUsesSeparateReferencedAndCommentOnlyLimits()
+    {
+        var referenced = Enumerable.Range(0, ProjectFactory.MaxReferencedDeviceMeta + 1)
+            .Select(index => $"D{index}");
+        Assert.Contains("Referenced device metadata", Assert.Throws<ArgumentException>(() =>
+            ProjectFactory.ValidateDeviceMetaComposition(referenced, [])).Message);
+
+        var commentOnly = Enumerable.Range(0, ProjectFactory.MaxCommentOnlyDeviceMeta + 1)
+            .Select(index => new DeviceCommentDefinition($"D{index}", "Int16", $"Comment {index}"));
+        Assert.Contains("Comment-only device metadata", Assert.Throws<ArgumentException>(() =>
+            ProjectFactory.ValidateDeviceMetaComposition([], commentOnly)).Message);
     }
 
 }

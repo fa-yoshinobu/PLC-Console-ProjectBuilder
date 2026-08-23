@@ -39,6 +39,9 @@ version). Importers must not treat this as project identity.
 `deviceList` and `timeChart` entries contain only `address`.
 `deviceMeta` entries contain `address`, `dataType`, and optional `comment`.
 Comments are normalized to one line and must be 1024 characters or fewer.
+An entry whose normalized address is not referenced by `deviceList`,
+`timeChart`, or `traps` is comment-only metadata and must contain a non-empty
+`comment`.
 Trap entries contain `id`, `enabled`, `address`, `condition`, and
 `comparisonValue`; trap data types are resolved through `deviceMeta`.
 
@@ -56,10 +59,12 @@ keeps friendly labels such as `MELSEC iQ-R (built-in)`, `KEYENCE KV-8000`, and
 ProjectBuilder must not emit a separate `plcProfile` field in schema v2.
 
 ProjectBuilder enforces the mobile app registration limits: up to 1,000 List
-devices, 1,040 `deviceMeta` entries, 20 Time Chart targets, and 20 trap
-definitions. Project JSON is limited to 5 MiB (5,242,880 bytes). Polling is
-limited to 100–10,000 ms and timeout to 250–10,000 ms; timeout may be shorter
-than the polling interval.
+devices, 20 Time Chart targets, and 20 trap definitions. The normalized union
+of addresses referenced by those three sections may contain up to 1,040
+entries. In addition, `deviceMeta` may contain up to 100,000 unreferenced,
+comment-only addresses. Project JSON is limited to 5 MiB (5,242,880 bytes) as
+the final total-size protection. Polling is limited to 100–10,000 ms and timeout
+to 250–10,000 ms; timeout may be shorter than the polling interval.
 
 ## Value Sets
 

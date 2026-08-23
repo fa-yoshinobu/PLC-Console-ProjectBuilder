@@ -322,6 +322,12 @@ public static class ProjectQrPayload
             AddOrFillComment(comment.Address, comment.DataType, comment.Comment);
         }
 
+        ProjectFactory.ValidateDeviceMetaComposition(
+            project.Devices.Select(device => device.Address)
+                .Concat(project.TimeChart.Select(target => target.Address))
+                .Concat(project.Traps.Select(trap => trap.Address)),
+            result.Select(meta => new DeviceCommentDefinition(meta.Address, meta.DataType, meta.Comment)));
+
         return result;
     }
 
