@@ -13,6 +13,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Tests`: テスト、fixture、検証データ。
 - `Tooling`: ビルド、CLI、開発補助。
 
+## [Unreleased] - 2026-08-24
+
+### Changed
+
+- App/Tests: MELSEC積算タイマ現在値`STN`を16-bit wordデバイスとして、Project生成・対応デバイス候補・データ型検証へ追加しました。
+
 ## [Unreleased] - 2026-08-23
 
 ### Changed

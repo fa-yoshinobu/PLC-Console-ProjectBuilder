@@ -412,6 +412,7 @@ public sealed class ProjectQrPayloadTests
     [Theory]
     [InlineData("Melsec", "Normal", "MELSEC iQ-R (built-in)", "XFF", "Bit")]
     [InlineData("Melsec", "Normal", "MELSEC iQ-R (built-in)", "SWFF", "Int16")]
+    [InlineData("Melsec", "Normal", "MELSEC iQ-R (built-in)", "STN10", "Int16")]
     [InlineData("Melsec", "Normal", "MELSEC iQ-F (built-in)", "X77", "Bit")]
     [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "R015", "Bit")]
     [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "DM100", "Int16")]
@@ -523,10 +524,10 @@ public sealed class ProjectQrPayloadTests
     public void ProjectFactoryReportsDeviceNamesSupportedByMobileApps()
     {
         Assert.Equal(
-            ["X", "Y", "M", "D", "L", "F", "B", "SB", "SM", "STC", "TC", "CC", "W", "SW", "R", "ZR", "SD"],
+            ["X", "Y", "M", "D", "L", "F", "B", "SB", "SM", "STC", "STN", "TC", "CC", "W", "SW", "R", "ZR", "SD"],
             ProjectFactory.SupportedDeviceNames("Melsec"));
         Assert.Equal(
-            ["X", "Y", "M", "D", "L", "F", "B", "SB", "SM", "STC", "TC", "CC", "W", "SW", "R", "ZR", "SD"],
+            ["X", "Y", "M", "D", "L", "F", "B", "SB", "SM", "STC", "STN", "TC", "CC", "W", "SW", "R", "ZR", "SD"],
             ProjectFactory.SupportedDeviceNames("Melsec", "Normal", "MELSEC iQ-F (built-in)"));
         Assert.Equal(
             ["R", "B", "MR", "LR", "CR", "DM", "EM", "FM", "ZF", "W", "TM", "CM"],
@@ -601,6 +602,7 @@ public sealed class ProjectQrPayloadTests
     {
         Assert.Equal(["Bit"], ProjectFactory.DeviceDataTypesForAddress("X0", "Melsec"));
         Assert.Equal(["Bit"], ProjectFactory.DeviceDataTypesForAddress("STC0", "Melsec"));
+        Assert.DoesNotContain("Bit", ProjectFactory.DeviceDataTypesForAddress("STN0", "Melsec"));
         Assert.Equal(["Bit"], ProjectFactory.DeviceDataTypesForAddress("X39F", "Keyence", "Xym"));
         Assert.DoesNotContain("Bit", ProjectFactory.DeviceDataTypesForAddress("D0", "Melsec"));
         Assert.DoesNotContain("Bit", ProjectFactory.DeviceDataTypesForAddress("SD0", "Melsec"));
