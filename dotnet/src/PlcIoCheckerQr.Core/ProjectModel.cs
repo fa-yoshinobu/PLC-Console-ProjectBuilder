@@ -336,14 +336,6 @@ public static partial class ProjectFactory
             keyenceDeviceMode,
             input.MachineLabel);
         var devices = ParseDevices(input.DevicesText, input.Vendor, keyenceDeviceMode, input.MachineLabel, explicitDataTypesByAddress);
-        var comments = MergeDeviceComments(
-            devices,
-            ParseComments(input.CommentsText, input.Vendor, keyenceDeviceMode, input.MachineLabel, explicitDataTypesByAddress));
-        devices = ApplyDeviceComments(devices, comments);
-        var deviceTypesByAddress = devices
-            .GroupBy(device => device.Address, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(group => group.Key, group => group.First().DataType, StringComparer.OrdinalIgnoreCase);
-
         var timeChart = ParseTimeChart(input.WatchText, input.Vendor, keyenceDeviceMode, input.MachineLabel, explicitDataTypesByAddress);
         var traps = ParseTraps(
             input.TrapsText,
@@ -352,6 +344,20 @@ public static partial class ProjectFactory
             input.MachineLabel,
             explicitDataTypesByAddress,
             input.TrapIds);
+        var referencedAddresses = devices.Select(device => device.Address)
+            .Concat(timeChart.Select(target => target.Address))
+            .Concat(traps.Select(trap => trap.Address))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var comments = MergeDeviceComments(
+            devices,
+            ParseComments(
+                input.CommentsText,
+                input.Vendor,
+                keyenceDeviceMode,
+                input.MachineLabel,
+                explicitDataTypesByAddress,
+                referencedAddresses));
+        devices = ApplyDeviceComments(devices, comments);
         var (projectDevices, projectTimeChart, projectTraps) = CommonizeDeviceDataTypes(devices, timeChart, traps);
         ValidateDeviceMetaComposition(
             projectDevices.Select(item => item.Address)
@@ -387,6 +393,12 @@ public static partial class ProjectFactory
             if (referenced.Contains(meta.Address))
             {
                 continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(meta.DataType))
+            {
+                throw new ArgumentException(
+                    $"Comment-only device metadata must omit the data type: {meta.Address}.");
             }
 
             if (string.IsNullOrWhiteSpace(meta.Comment))
@@ -578,7 +590,8 @@ public static partial class ProjectFactory
         string vendor,
         string keyenceDeviceMode,
         string machineLabel,
-        IReadOnlyDictionary<string, string> explicitDataTypesByAddress)
+        IReadOnlyDictionary<string, string> explicitDataTypesByAddress,
+        IReadOnlySet<string> referencedAddresses)
     {
         var comments = new List<DeviceCommentDefinition>();
         foreach (var line in ParseLines(commentsText))
@@ -590,16 +603,29 @@ public static partial class ProjectFactory
             }
 
             var address = NormalizeDeviceAddress(parts[0], vendor, keyenceDeviceMode, machineLabel);
-            var (dataType, hasExplicitDataType) = ResolveDeviceDataType(
-                parts,
-                1,
-                address,
-                vendor,
-                keyenceDeviceMode,
-                machineLabel,
-                explicitDataTypesByAddress,
-                "comment data type");
-            var commentIndex = hasExplicitDataType ? 2 : 1;
+            var explicitlyOmittedDataType =
+                parts.Length > 2 && string.IsNullOrWhiteSpace(parts[1]);
+            string dataType;
+            int commentIndex;
+            if (explicitlyOmittedDataType && !referencedAddresses.Contains(address))
+            {
+                dataType = "";
+                commentIndex = 2;
+            }
+            else
+            {
+                var resolved = ResolveDeviceDataType(
+                    parts,
+                    1,
+                    address,
+                    vendor,
+                    keyenceDeviceMode,
+                    machineLabel,
+                    explicitDataTypesByAddress,
+                    "comment data type");
+                dataType = resolved.DataType;
+                commentIndex = resolved.HasExplicitDataType || explicitlyOmittedDataType ? 2 : 1;
+            }
             comments.Add(new DeviceCommentDefinition(address, dataType, DeviceCommentFromParts(parts, commentIndex)));
         }
 

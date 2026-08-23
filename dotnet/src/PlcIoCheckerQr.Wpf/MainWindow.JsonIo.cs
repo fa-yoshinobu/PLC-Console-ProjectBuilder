@@ -414,29 +414,48 @@ public partial class MainWindow
             }
         }
 
-        var deviceMetaByAddress = ReadDeviceMetaByAddress(root);
-        _comments.Clear();
-        var normalizedMetaAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (address, meta) in deviceMetaByAddress)
-        {
-            var row = new CommentRow();
-            row.SetDeviceContext(Selected(_vendor), SelectedKeyenceDeviceMode());
-            row.Address = NormalizeAddressText(address);
-            row.DataType = NormalizeDeviceDataType(meta.DataType, row.Address);
-            row.Comment = meta.Comment;
-            if (!normalizedMetaAddresses.Add(row.Address))
-            {
-                throw new InvalidOperationException($"Duplicate normalized project JSON deviceMeta address: {row.Address}");
-            }
-            _comments.Add(row);
-        }
-
         var devicesElement = ReadRequiredArray(root, "deviceList");
         RequireObjectArrayProperties(devicesElement, "deviceList", "address");
         if (devicesElement.GetArrayLength() > ProjectFactory.MaxDevices)
         {
             throw new InvalidOperationException($"Project JSON deviceList can contain up to {ProjectFactory.MaxDevices} rows.");
         }
+
+        var timeChartElement = ReadRequiredArray(root, "timeChart");
+        RequireObjectArrayProperties(timeChartElement, "timeChart", "address");
+        if (timeChartElement.GetArrayLength() > ProjectFactory.MaxTimeChartTargets)
+        {
+            throw new InvalidOperationException($"Project JSON timeChart can contain up to {ProjectFactory.MaxTimeChartTargets} rows.");
+        }
+
+        var trapsElement = ReadRequiredArray(root, "traps");
+        RequireObjectArrayProperties(trapsElement, "traps", "id", "enabled", "address", "condition", "comparisonValue");
+        if (trapsElement.GetArrayLength() > ProjectFactory.MaxTrapDefinitions)
+        {
+            throw new InvalidOperationException($"Project JSON traps can contain up to {ProjectFactory.MaxTrapDefinitions} rows.");
+        }
+
+        var referencedMetaAddresses = ReadReferencedDeviceMetaAddresses(
+            devicesElement,
+            timeChartElement,
+            trapsElement);
+        var deviceMetaByAddress = ReadDeviceMetaByAddress(
+            root,
+            referencedMetaAddresses,
+            NormalizeAddressText);
+        _comments.Clear();
+        foreach (var (address, meta) in deviceMetaByAddress)
+        {
+            var row = new CommentRow();
+            row.SetDeviceContext(Selected(_vendor), SelectedKeyenceDeviceMode());
+            row.Address = address;
+            row.DataType = meta.DataType is null
+                ? ""
+                : NormalizeDeviceDataType(ToUiDataType(meta.DataType), row.Address);
+            row.Comment = meta.Comment;
+            _comments.Add(row);
+        }
+
         _devices.Clear();
         var deviceAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var device in devicesElement.EnumerateArray())
@@ -446,7 +465,10 @@ public partial class MainWindow
             var row = new DeviceRow();
             row.SetDeviceContext(Selected(_vendor), SelectedKeyenceDeviceMode());
             row.Address = NormalizeAddressText(address);
-            row.DataType = NormalizeDeviceDataType(meta.DataType, row.Address);
+            row.DataType = NormalizeDeviceDataType(
+                ToUiDataType(meta.DataType ?? throw new InvalidOperationException(
+                    $"Project JSON value 'deviceMeta.dataType' is missing for referenced address '{row.Address}'.")),
+                row.Address);
             row.Comment = meta.Comment;
             if (!deviceAddresses.Add(row.Address))
             {
@@ -455,12 +477,6 @@ public partial class MainWindow
             _devices.Add(row);
         }
 
-        var timeChartElement = ReadRequiredArray(root, "timeChart");
-        RequireObjectArrayProperties(timeChartElement, "timeChart", "address");
-        if (timeChartElement.GetArrayLength() > ProjectFactory.MaxTimeChartTargets)
-        {
-            throw new InvalidOperationException($"Project JSON timeChart can contain up to {ProjectFactory.MaxTimeChartTargets} rows.");
-        }
         _watches.Clear();
         var watchAddresses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var target in timeChartElement.EnumerateArray())
@@ -470,7 +486,10 @@ public partial class MainWindow
             var row = new WatchRow();
             row.SetDeviceContext(Selected(_vendor), SelectedKeyenceDeviceMode());
             row.Address = NormalizeAddressText(address);
-            row.DataType = NormalizeDeviceDataType(meta.DataType, row.Address);
+            row.DataType = NormalizeDeviceDataType(
+                ToUiDataType(meta.DataType ?? throw new InvalidOperationException(
+                    $"Project JSON value 'deviceMeta.dataType' is missing for referenced address '{row.Address}'.")),
+                row.Address);
             row.Comment = meta.Comment;
             if (!watchAddresses.Add(row.Address))
             {
@@ -479,12 +498,6 @@ public partial class MainWindow
             _watches.Add(row);
         }
 
-        var trapsElement = ReadRequiredArray(root, "traps");
-        RequireObjectArrayProperties(trapsElement, "traps", "id", "enabled", "address", "condition", "comparisonValue");
-        if (trapsElement.GetArrayLength() > ProjectFactory.MaxTrapDefinitions)
-        {
-            throw new InvalidOperationException($"Project JSON traps can contain up to {ProjectFactory.MaxTrapDefinitions} rows.");
-        }
         _traps.Clear();
         var trapIds = new HashSet<string>(StringComparer.Ordinal);
         var trapDefinitions = new HashSet<string>(StringComparer.Ordinal);
@@ -518,7 +531,10 @@ public partial class MainWindow
             var address = ReadRequiredString(trap, "address");
             var meta = RequireDeviceMeta(deviceMetaByAddress, address);
             row.Address = NormalizeAddressText(address);
-            row.DataType = NormalizeDeviceDataType(meta.DataType, row.Address);
+            row.DataType = NormalizeDeviceDataType(
+                ToUiDataType(meta.DataType ?? throw new InvalidOperationException(
+                    $"Project JSON value 'deviceMeta.dataType' is missing for referenced address '{row.Address}'.")),
+                row.Address);
             row.Comment = meta.Comment;
             var condition = ToUiTrapCondition(ReadRequiredString(trap, "condition"));
             if (hasThreshold != ProjectFactory.TrapConditionRequiresThreshold(condition))
@@ -546,45 +562,31 @@ public partial class MainWindow
         CommonizeDeviceDataTypes();
     }
 
-    private sealed record ProjectDeviceMeta(string DataType, string Comment);
-
-    private static Dictionary<string, ProjectDeviceMeta> ReadDeviceMetaByAddress(JsonElement root)
+    private HashSet<string> ReadReferencedDeviceMetaAddresses(params JsonElement[] arrays)
     {
-        var result = new Dictionary<string, ProjectDeviceMeta>(StringComparer.OrdinalIgnoreCase);
-        var deviceMeta = ReadRequiredArray(root, "deviceMeta");
-        RequireObjectArrayProperties(deviceMeta, "deviceMeta", "address", "dataType", "comment");
-        var maxDeviceMetaRows =
-            ProjectFactory.MaxReferencedDeviceMeta + ProjectFactory.MaxCommentOnlyDeviceMeta;
-        if (deviceMeta.GetArrayLength() > maxDeviceMetaRows)
+        var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var array in arrays)
         {
-            throw new InvalidOperationException(
-                $"Project JSON deviceMeta can contain up to {ProjectFactory.MaxReferencedDeviceMeta:N0} referenced rows " +
-                $"and {ProjectFactory.MaxCommentOnlyDeviceMeta:N0} comment-only rows.");
-        }
-        foreach (var meta in deviceMeta.EnumerateArray())
-        {
-            var address = ReadRequiredString(meta, "address").Trim().ToUpperInvariant();
-            if (string.IsNullOrWhiteSpace(address))
+            foreach (var item in array.EnumerateArray())
             {
-                throw new InvalidOperationException("Project JSON value 'deviceMeta.address' must not be empty.");
-            }
+                var address = NormalizeAddressText(ReadRequiredString(item, "address"));
+                if (string.IsNullOrWhiteSpace(address))
+                {
+                    throw new InvalidOperationException("Project JSON referenced device address must not be empty.");
+                }
 
-            if (!result.TryAdd(address, new ProjectDeviceMeta(
-                    DataType: ToUiDataType(ReadRequiredString(meta, "dataType")),
-                    Comment: ReadOptionalString(meta, "comment"))))
-            {
-                throw new InvalidOperationException($"Duplicate project JSON deviceMeta address: {address}");
+                result.Add(address);
             }
         }
 
         return result;
     }
 
-    private static ProjectDeviceMeta RequireDeviceMeta(
-        IReadOnlyDictionary<string, ProjectDeviceMeta> deviceMetaByAddress,
+    private ProjectJsonReader.DeviceMeta RequireDeviceMeta(
+        IReadOnlyDictionary<string, ProjectJsonReader.DeviceMeta> deviceMetaByAddress,
         string address)
     {
-        var normalizedAddress = address.Trim().ToUpperInvariant();
+        var normalizedAddress = NormalizeAddressText(address);
         if (deviceMetaByAddress.TryGetValue(normalizedAddress, out var meta))
         {
             return meta;

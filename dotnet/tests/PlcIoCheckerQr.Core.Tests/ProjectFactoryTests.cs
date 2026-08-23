@@ -28,12 +28,13 @@ public sealed class ProjectFactoryTests
             DevicesText: "d001,Int16",
             WatchText: "x00f,Bit",
             TrapsText: "stc000,Bit,Rise,,true",
-            CommentsText: "sd000,Int16,System word"));
+            CommentsText: "sd000,,System word"));
 
         Assert.Equal("D1", project.Devices.Single().Address);
         Assert.Equal("XF", project.TimeChart.Single().Address);
         Assert.Equal("STC0", project.Traps.Single().Address);
         Assert.Equal("SD0", project.Comments.Single().Address);
+        Assert.Equal("", project.Comments.Single().DataType);
     }
 
     [Theory]
@@ -188,7 +189,7 @@ public sealed class ProjectFactoryTests
     public void MakeProjectAllowsCommentOnlyMetadataBeyondReferencedLimit()
     {
         var comments = string.Join("\n", Enumerable.Range(0, ProjectFactory.MaxReferencedDeviceMeta + 1)
-            .Select(index => $"D{index},Int16,Comment {index}"));
+            .Select(index => $"D{index},,Comment {index}"));
 
         var project = ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
             DevicesText: "",
@@ -199,6 +200,9 @@ public sealed class ProjectFactoryTests
         Assert.Equal(
             ProjectFactory.MaxReferencedDeviceMeta + 1,
             document.RootElement.GetProperty("deviceMeta").GetArrayLength());
+        Assert.All(
+            document.RootElement.GetProperty("deviceMeta").EnumerateArray(),
+            meta => Assert.False(meta.TryGetProperty("dataType", out _)));
         Assert.NotEmpty(ProjectQrPayload.EncodeProjectChunks(project, chunkSize: 1_000));
     }
 
@@ -207,9 +211,19 @@ public sealed class ProjectFactoryTests
     {
         var exception = Assert.Throws<ArgumentException>(() => ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
             DevicesText: "",
-            CommentsText: "D100,Int16,")));
+            CommentsText: "D100,,")));
 
         Assert.Contains("requires a non-empty comment", exception.Message);
+    }
+
+    [Fact]
+    public void MakeProjectRejectsDataTypeOnCommentOnlyMetadata()
+    {
+        var exception = Assert.Throws<ArgumentException>(() => ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
+            DevicesText: "",
+            CommentsText: "D100,Int16,Comment only")));
+
+        Assert.Contains("must omit the data type", exception.Message);
     }
 
     [Fact]
@@ -221,7 +235,7 @@ public sealed class ProjectFactoryTests
             ProjectFactory.ValidateDeviceMetaComposition(referenced, [])).Message);
 
         var commentOnly = Enumerable.Range(0, ProjectFactory.MaxCommentOnlyDeviceMeta + 1)
-            .Select(index => new DeviceCommentDefinition($"D{index}", "Int16", $"Comment {index}"));
+            .Select(index => new DeviceCommentDefinition($"D{index}", "", $"Comment {index}"));
         Assert.Contains("Comment-only device metadata", Assert.Throws<ArgumentException>(() =>
             ProjectFactory.ValidateDeviceMetaComposition([], commentOnly)).Message);
     }

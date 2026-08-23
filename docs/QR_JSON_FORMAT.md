@@ -5,15 +5,16 @@ The README is intentionally kept as a user guide.
 
 ## Project JSON
 
-The generated JSON uses the shared `plc-io-checker-project` schema v2 consumed
+The generated JSON uses the shared `plc-console-project` schema v2 consumed
 by Android and iOS.
 
 Generated project JSON includes only shared schema v2 fields. UI-only
 preferences and runtime observation values are not emitted.
 
-ProjectBuilder emits shared address metadata in `deviceMeta`. Comments and data
-types are stored there once per address. `deviceList`, `timeChart`, and `traps`
-store membership and trap settings only.
+ProjectBuilder emits shared address metadata in `deviceMeta`. Comments are
+stored there once per address, and referenced addresses store their data type
+there as well. `deviceList`, `timeChart`, and `traps` store membership and trap
+settings only.
 
 Top-level fields:
 
@@ -36,12 +37,15 @@ still treat JSON object order as non-semantic.
 `source` (`PROJECT_BUILDER`, `ANDROID`, or `IOS`) and `version` (the exporter app
 version). Importers must not treat this as project identity.
 
-`deviceList` and `timeChart` entries contain only `address`.
-`deviceMeta` entries contain `address`, `dataType`, and optional `comment`.
-Comments are normalized to one line and must be 1024 characters or fewer.
-An entry whose normalized address is not referenced by `deviceList`,
-`timeChart`, or `traps` is comment-only metadata and must contain a non-empty
-`comment`.
+`deviceList` and `timeChart` entries contain only `address`. A `deviceMeta`
+entry whose normalized address is referenced by `deviceList`, `timeChart`, or
+`traps` must contain `address` and `dataType`; `comment` is optional. An
+unreferenced, comment-only entry must contain `address` and a non-empty
+`comment`, and must omit `dataType`. Importers reject a missing referenced
+`dataType`, a comment-only `dataType`, or a blank comment-only `comment` without
+guessing or fallback. ProjectBuilder generation also rejects an explicit data
+type on a comment-only row instead of silently discarding it. Comments are
+normalized to one line and must be 1024 characters or fewer.
 Trap entries contain `id`, `enabled`, `address`, `condition`, and
 `comparisonValue`; trap data types are resolved through `deviceMeta`.
 
@@ -75,7 +79,7 @@ to 250–10,000 ms; timeout may be shorter than the polling interval.
 - `plc.connection.mode`: `REAL`, `DEMO_MOCK`
 - `plc.connection.transport`: `TCP`, `UDP`
 - `traps.condition`: `RISING_EDGE`, `FALLING_EDGE`, `CHANGE`, `GREATER_OR_EQUAL`, `LESS_OR_EQUAL`, `EQUAL`, `NOT_EQUAL`
-- `dataType`: `BIT`, `INT16`, `UINT16`, `INT32`, `UINT32`, `FLOAT32`
+- referenced `deviceMeta.dataType`: `BIT`, `INT16`, `UINT16`, `INT32`, `UINT32`, `FLOAT32`
 
 ## QR Payload
 
@@ -103,6 +107,8 @@ characters.
 
 ## Compatibility Policy
 
-Only schema version 2 is accepted. Do not add silent fallback, alias conversion,
-or compatibility normalization for older or invalid values. Invalid data should
-fail visibly so QR/JSON bugs are caught early.
+Only the `plc-console-project` schema identifier with schema version 2 is
+accepted. The former `plc-io-checker-project` identifier is rejected. Do not add
+silent fallback, alias conversion, or compatibility normalization for older or
+invalid values. Invalid data should fail visibly so QR/JSON bugs are caught
+early.

@@ -85,7 +85,15 @@ Project limits are shared with the mobile apps: 1,000 List devices, 20 Time
 Chart channels, 20 Trap definitions, 5 MiB project JSON, 4,096 QR pages, 1 MiB
 compressed QR data, and 5 MiB decompressed QR data. Polling accepts 100–10,000
 ms and timeout accepts 250–10,000 ms independently. ProjectBuilder accepts and
-emits schema version 2 only; old or invalid JSON is rejected without conversion.
+emits only the `plc-console-project` schema identifier with schema version 2;
+the former `plc-io-checker-project` identifier and other invalid JSON are
+rejected without conversion.
+
+In schema v2, `deviceMeta.dataType` is conditional. Metadata referenced by
+List, Time Chart, or Trap must contain `dataType`. Truly comment-only metadata
+must omit `dataType` and contain a non-empty `comment`. ProjectBuilder applies
+the same rule when reading and writing JSON; it does not infer a missing type or
+accept a type on a comment-only entry.
 
 ## Scanning Tips
 

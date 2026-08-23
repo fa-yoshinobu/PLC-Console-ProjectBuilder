@@ -22,6 +22,9 @@ public sealed record QrChunk(
 
 public static class ProjectQrPayload
 {
+    public const string SchemaIdentifier = "plc-console-project";
+    public const int SchemaVersion = 2;
+
     private const int ZstdCompressionLevel = 19;
     private const int MaxQrEncodedCharacters = ((ProjectFactory.MaxQrCompressedBytes + 2) / 3) * 4;
 
@@ -212,10 +215,11 @@ public static class ProjectQrPayload
     private static object ToJsonShape(PlcProject project)
     {
         var deviceMeta = ProjectDeviceMeta(project);
+        var referencedAddresses = ProjectReferencedAddresses(project);
         return new
     {
-        schema = "plc-io-checker-project",
-        schemaVersion = 2,
+        schema = SchemaIdentifier,
+        schemaVersion = SchemaVersion,
         exportInfo = new
         {
             source = "PROJECT_BUILDER",
@@ -257,7 +261,9 @@ public static class ProjectQrPayload
         deviceMeta = deviceMeta.Select(meta => new
         {
             address = meta.Address,
-            dataType = FormatDataType(meta.DataType),
+            dataType = referencedAddresses.Contains(meta.Address)
+                ? FormatDataType(meta.DataType)
+                : null,
             comment = string.IsNullOrWhiteSpace(meta.Comment) ? null : meta.Comment,
         }),
         traps = project.Traps.Select(trap => new
@@ -273,6 +279,12 @@ public static class ProjectQrPayload
     }
 
     private sealed record DeviceMeta(string Address, string DataType, string Comment);
+
+    private static HashSet<string> ProjectReferencedAddresses(PlcProject project) =>
+        project.Devices.Select(device => device.Address)
+            .Concat(project.TimeChart.Select(target => target.Address))
+            .Concat(project.Traps.Select(trap => trap.Address))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     private static IReadOnlyList<DeviceMeta> ProjectDeviceMeta(PlcProject project)
     {
@@ -323,9 +335,7 @@ public static class ProjectQrPayload
         }
 
         ProjectFactory.ValidateDeviceMetaComposition(
-            project.Devices.Select(device => device.Address)
-                .Concat(project.TimeChart.Select(target => target.Address))
-                .Concat(project.Traps.Select(trap => trap.Address)),
+            ProjectReferencedAddresses(project),
             result.Select(meta => new DeviceCommentDefinition(meta.Address, meta.DataType, meta.Comment)));
 
         return result;

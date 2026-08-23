@@ -2,7 +2,7 @@
 
 This app exists because configuring FA Labo PLC Console projects on a smartphone is
 tedious. The PC GUI should make project data entry easier, then export project
-JSON v1 and QR codes for Android and iOS.
+JSON v2 and QR codes for Android and iOS.
 
 ## Primary Workflows
 
@@ -16,7 +16,8 @@ The main screen should prioritize:
 - Trap
   - Limit registration to 20 definitions to match the mobile apps.
 - Comment
-  - Edit address comments and data types stored in `deviceMeta`.
+  - Edit address comments stored in `deviceMeta` and the data types used when
+    those addresses are referenced by List, Time Chart, or Trap.
 
 These are the project settings users need to enter and edit most often.
 
@@ -45,7 +46,7 @@ the row editing grids.
 
 ## Project JSON Compatibility
 
-Use the shared `plc-io-checker-project` schema v2 as the source of truth for
+Use the shared `plc-console-project` schema v2 as the source of truth for
 JSON structure and selection values:
 
 - `schema`
@@ -61,8 +62,11 @@ JSON structure and selection values:
 - `PLCIOC1|ZSTD` QR import format for Zstd-compressed QR payloads
 
 Do not emit removed project keys, UI-only preferences, or runtime trap values.
-Store comments and data types once per address in `deviceMeta`; keep
-`deviceList`, `timeChart`, and `traps` scoped to their own registration data.
+Store comments once per address in `deviceMeta`; keep `deviceList`,
+`timeChart`, and `traps` scoped to their own registration data. Referenced
+`deviceMeta` entries require `dataType` and may contain `comment`.
+Unreferenced, comment-only entries require a non-empty `comment` and must omit
+`dataType`. Reject the wrong presence or absence instead of inferring a value.
 Comments are normalized to one line and limited to 1024 characters.
 
 Use uppercase schema enum values in JSON:

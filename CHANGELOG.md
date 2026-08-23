@@ -15,9 +15,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased] - 2026-08-24
 
+### BREAKING
+
+- Project JSON: schema識別子を`plc-console-project`へ変更し、旧識別子`plc-io-checker-project`はalias変換せず読込エラーにするようにしました。
+- Project JSON: `deviceMeta.dataType`を参照状態に応じた条件付き項目へ変更しました。List / Time Chart / Trapから参照される項目では必須、コメント専用項目では禁止とし、コメント専用項目には空でない`comment`を必須にしました。誤った有無は補完せず読込エラーにします。
+
 ### Changed
 
 - App/Tests: MELSEC積算タイマ現在値`STN`を16-bit wordデバイスとして、Project生成・対応デバイス候補・データ型検証へ追加しました。
+- App/Tests: ProjectBuilderは未参照のコメント専用行をデータ型なしで保持・再出力し、Core出力とWPF読込の条件付き`deviceMeta`規則を焦点を絞ったテストで確認するようにしました。
 
 ## [Unreleased] - 2026-08-23
 

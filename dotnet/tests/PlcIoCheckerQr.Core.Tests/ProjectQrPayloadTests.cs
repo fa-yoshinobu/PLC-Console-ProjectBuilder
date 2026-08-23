@@ -24,7 +24,7 @@ public sealed class ProjectQrPayloadTests
 
         using var document = JsonDocument.Parse(decoded);
         var root = document.RootElement;
-        Assert.Equal("plc-io-checker-project", root.GetProperty("schema").GetString());
+        Assert.Equal("plc-console-project", root.GetProperty("schema").GetString());
         Assert.Equal(2, root.GetProperty("schemaVersion").GetInt32());
         var exportInfo = root.GetProperty("exportInfo");
         Assert.Equal("PROJECT_BUILDER", exportInfo.GetProperty("source").GetString());
@@ -263,8 +263,10 @@ public sealed class ProjectQrPayloadTests
         using var document = JsonDocument.Parse(json);
         var deviceMeta = document.RootElement.GetProperty("deviceMeta");
         Assert.Equal("D100", deviceMeta[0].GetProperty("address").GetString());
+        Assert.Equal("INT16", deviceMeta[0].GetProperty("dataType").GetString());
         Assert.Equal("Watch comment", deviceMeta[0].GetProperty("comment").GetString());
         Assert.Equal("D101", deviceMeta[1].GetProperty("address").GetString());
+        Assert.Equal("INT16", deviceMeta[1].GetProperty("dataType").GetString());
         Assert.Equal("Trap comment", deviceMeta[1].GetProperty("comment").GetString());
     }
 
@@ -294,14 +296,15 @@ public sealed class ProjectQrPayloadTests
             DevicesText: "",
             WatchText: "",
             TrapsText: "",
-            CommentsText: "D100,Int16,Comment only"));
+            CommentsText: "D100,,Comment only"));
 
         var json = Encoding.UTF8.GetString(ProjectQrPayload.ProjectJsonBytes(project));
         using var document = JsonDocument.Parse(json);
         var deviceMeta = document.RootElement.GetProperty("deviceMeta");
         Assert.Single(deviceMeta.EnumerateArray());
+        Assert.Equal("", project.Comments.Single().DataType);
         Assert.Equal("D100", deviceMeta[0].GetProperty("address").GetString());
-        Assert.Equal("INT16", deviceMeta[0].GetProperty("dataType").GetString());
+        Assert.False(deviceMeta[0].TryGetProperty("dataType", out _));
         Assert.Equal("Comment only", deviceMeta[0].GetProperty("comment").GetString());
     }
 

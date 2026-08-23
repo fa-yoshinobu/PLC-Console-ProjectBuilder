@@ -163,16 +163,33 @@ public partial class MainWindow
                 return $"{address},{dataType}";
             }));
 
-    private string CommentsText() => string.Join(Environment.NewLine,
-        ProjectCommentRows()
+    private string CommentsText()
+    {
+        var referencedAddresses = RegisteredAddresses()
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var rows = ProjectCommentRows()
             .Where(row => !string.IsNullOrWhiteSpace(row.Address))
-            .Select(row =>
+            .ToArray();
+        ProjectFactory.ValidateDeviceMetaComposition(
+            referencedAddresses,
+            rows.Select(row => new DeviceCommentDefinition(
+                row.Address.Trim(),
+                row.DataType,
+                NormalizeDeviceComment(row.Comment))));
+        return string.Join(Environment.NewLine,
+            rows.Select(row =>
             {
                 var address = row.Address.Trim();
-                var dataType = RequiredOutputDataType(row.DataType, address, "comment data type");
                 var comment = NormalizeDeviceComment(row.Comment);
+                if (!referencedAddresses.Contains(address))
+                {
+                    return $"{address},,{comment}";
+                }
+
+                var dataType = RequiredOutputDataType(row.DataType, address, "comment data type");
                 return $"{address},{dataType},{comment}";
             }));
+    }
 
     private IEnumerable<DataTypedAddressRow> ProjectCommentRows() =>
         _comments.Cast<DataTypedAddressRow>()

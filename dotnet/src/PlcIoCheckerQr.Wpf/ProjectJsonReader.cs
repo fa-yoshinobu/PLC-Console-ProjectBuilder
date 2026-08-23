@@ -1,20 +1,23 @@
 using System.Globalization;
 using System.Text.Json;
+using PlcIoCheckerQr.Core;
 
 namespace PlcIoCheckerQr.Wpf;
 
 internal static class ProjectJsonReader
 {
+    internal sealed record DeviceMeta(string Address, string? DataType, string Comment);
+
     internal static void RequireProjectJsonV2(JsonElement root)
     {
         var schema = ReadRequiredString(root, "schema");
-        if (schema != "plc-io-checker-project")
+        if (schema != ProjectQrPayload.SchemaIdentifier)
         {
             throw new ProjectJsonException("error.jsonSchemaInvalid", schema);
         }
 
         var version = ReadRequiredInt(root, "schemaVersion");
-        if (version != 2)
+        if (version != ProjectQrPayload.SchemaVersion)
         {
             throw new ProjectJsonException("error.jsonVersionInvalid", version.ToString(CultureInfo.InvariantCulture));
         }
@@ -45,6 +48,79 @@ internal static class ProjectJsonReader
             RequireOnlyProperties(item, $"{path}[{index}]", allowedNames);
             index++;
         }
+    }
+
+    internal static Dictionary<string, DeviceMeta> ReadDeviceMetaByAddress(
+        JsonElement root,
+        IReadOnlySet<string> referencedAddresses,
+        Func<string, string> normalizeAddress)
+    {
+        var result = new Dictionary<string, DeviceMeta>(StringComparer.OrdinalIgnoreCase);
+        var deviceMeta = ReadRequiredArray(root, "deviceMeta");
+        var maxDeviceMetaRows =
+            ProjectFactory.MaxReferencedDeviceMeta + ProjectFactory.MaxCommentOnlyDeviceMeta;
+        if (deviceMeta.GetArrayLength() > maxDeviceMetaRows)
+        {
+            throw new InvalidOperationException(
+                $"Project JSON deviceMeta can contain up to {ProjectFactory.MaxReferencedDeviceMeta:N0} referenced rows " +
+                $"and {ProjectFactory.MaxCommentOnlyDeviceMeta:N0} comment-only rows.");
+        }
+
+        var index = 0;
+        foreach (var meta in deviceMeta.EnumerateArray())
+        {
+            var path = $"deviceMeta[{index}]";
+            RequireOnlyProperties(meta, path, "address", "dataType", "comment");
+            var address = normalizeAddress(ReadRequiredString(meta, "address"));
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                throw new InvalidOperationException($"Project JSON value '{path}.address' must not be empty.");
+            }
+
+            var isReferenced = referencedAddresses.Contains(address);
+            var hasDataType = meta.TryGetProperty("dataType", out _);
+            string? dataType = null;
+            string comment;
+            if (isReferenced)
+            {
+                if (!hasDataType)
+                {
+                    throw new InvalidOperationException(
+                        $"Project JSON value '{path}.dataType' is required for referenced address '{address}'.");
+                }
+
+                dataType = ReadRequiredString(meta, "dataType");
+                if (string.IsNullOrWhiteSpace(dataType))
+                {
+                    throw new InvalidOperationException(
+                        $"Project JSON value '{path}.dataType' must not be empty for referenced address '{address}'.");
+                }
+                comment = ReadOptionalString(meta, "comment");
+            }
+            else
+            {
+                if (hasDataType)
+                {
+                    throw new InvalidOperationException(
+                        $"Project JSON value '{path}.dataType' must be omitted for comment-only address '{address}'.");
+                }
+
+                comment = ReadRequiredString(meta, "comment");
+                if (string.IsNullOrWhiteSpace(comment))
+                {
+                    throw new InvalidOperationException(
+                        $"Project JSON value '{path}.comment' must not be empty for comment-only address '{address}'.");
+                }
+            }
+
+            if (!result.TryAdd(address, new DeviceMeta(address, dataType, comment)))
+            {
+                throw new InvalidOperationException($"Duplicate normalized project JSON deviceMeta address: {address}");
+            }
+            index++;
+        }
+
+        return result;
     }
 
     internal static JsonElement ReadRequiredObject(JsonElement element, string name)
