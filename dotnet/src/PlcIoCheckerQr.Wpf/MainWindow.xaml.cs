@@ -50,6 +50,7 @@ public partial class MainWindow : Window
     private string _languageCode = "en";
     private bool _isReadyStatus = true;
     private bool _isSyncingRowValues;
+    private bool _isApplyingVendorDefaults;
     private readonly DispatcherTimer _autoQrTimer = new();
 
     private const double DefaultAutoQrIntervalSeconds = 1.0;
@@ -83,7 +84,7 @@ public partial class MainWindow : Window
         _qrView.Focusable = true;
         AddHandler(Keyboard.PreviewKeyDownEvent, new KeyEventHandler(MainWindow_PreviewKeyDown), handledEventsToo: true);
         _vendor.SelectionChanged += (_, _) => ApplyVendorDefaults();
-        _model.SelectionChanged += (_, _) => UpdateDeviceValidationStatus();
+        _model.SelectionChanged += (_, _) => ApplySelectedModelContext();
         _projectName.TextChanged += (_, _) => UpdateHeaderProjectName();
 
         ApplyVendorDefaults();
@@ -97,19 +98,37 @@ public partial class MainWindow : Window
         var vendor = Selected(_vendor);
         var models = vendor == "Keyence" ? ProjectFactory.KeyenceCpuModels : ProjectFactory.MelsecCpuModels;
 
-        _model.ItemsSource = models;
-        _model.SelectedIndex = 0;
-        _port.Text = vendor == "Keyence" ? "8501" : "1025";
-        var melsecRoutingVisibility = vendor == "Keyence" ? Visibility.Collapsed : Visibility.Visible;
-        _networkLabel.Visibility = melsecRoutingVisibility;
-        _network.Visibility = melsecRoutingVisibility;
-        _stationLabel.Visibility = melsecRoutingVisibility;
-        _station.Visibility = melsecRoutingVisibility;
-        _moduleIoLabel.Visibility = melsecRoutingVisibility;
-        _moduleIo.Visibility = melsecRoutingVisibility;
-        _resetRoutingDefaultsButton.Visibility = melsecRoutingVisibility;
+        _isApplyingVendorDefaults = true;
+        try
+        {
+            _model.ItemsSource = models;
+            _model.SelectedIndex = 0;
+            _port.Text = vendor == "Keyence" ? "8501" : "1025";
+            var melsecRoutingVisibility = vendor == "Keyence" ? Visibility.Collapsed : Visibility.Visible;
+            _networkLabel.Visibility = melsecRoutingVisibility;
+            _network.Visibility = melsecRoutingVisibility;
+            _stationLabel.Visibility = melsecRoutingVisibility;
+            _station.Visibility = melsecRoutingVisibility;
+            _moduleIoLabel.Visibility = melsecRoutingVisibility;
+            _moduleIo.Visibility = melsecRoutingVisibility;
+            _resetRoutingDefaultsButton.Visibility = melsecRoutingVisibility;
+        }
+        finally
+        {
+            _isApplyingVendorDefaults = false;
+        }
+
         ApplyDeviceContextToRows();
-        UpdateSupportedDeviceNames();
+    }
+
+    private void ApplySelectedModelContext()
+    {
+        if (_isApplyingVendorDefaults || _model.SelectedItem is null)
+        {
+            return;
+        }
+
+        ApplyDeviceContextToRows();
     }
 
     private void ApplyDeviceContextToRows()

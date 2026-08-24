@@ -110,8 +110,18 @@ public partial class MainWindow
 
     private static Style CommentTextBoxStyle()
     {
-        var style = new Style(typeof(TextBox), Application.Current.TryFindResource(typeof(TextBox)) as Style);
+        var style = DataGridTextBoxStyle();
         style.Setters.Add(new Setter(TextBox.MaxLengthProperty, ProjectCommentRules.MaxCommentCharacters));
+        return style;
+    }
+
+    private static Style DataGridTextBoxStyle()
+    {
+        var style = new Style(typeof(TextBox), Application.Current.TryFindResource(typeof(TextBox)) as Style);
+        style.Setters.Add(new Setter(FrameworkElement.MinHeightProperty, 0d));
+        style.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(0)));
+        style.Setters.Add(new Setter(Control.BorderThicknessProperty, new Thickness(0)));
+        style.Setters.Add(new Setter(Control.VerticalContentAlignmentProperty, VerticalAlignment.Center));
         return style;
     }
 
@@ -119,14 +129,9 @@ public partial class MainWindow
         DependencyProperty foregroundProperty,
         DependencyProperty fontWeightProperty) where T : FrameworkElement
     {
-        var style = new Style(typeof(T), Application.Current.TryFindResource(typeof(T)) as Style);
-        if (typeof(T) == typeof(TextBox))
-        {
-            style.Setters.Add(new Setter(FrameworkElement.MinHeightProperty, 0d));
-            style.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(0)));
-            style.Setters.Add(new Setter(Control.BorderThicknessProperty, new Thickness(0)));
-            style.Setters.Add(new Setter(Control.VerticalContentAlignmentProperty, VerticalAlignment.Center));
-        }
+        var style = typeof(T) == typeof(TextBox)
+            ? DataGridTextBoxStyle()
+            : new Style(typeof(T), Application.Current.TryFindResource(typeof(T)) as Style);
 
         style.Triggers.Add(new DataTrigger
         {
@@ -205,6 +210,7 @@ public partial class MainWindow
     private static DataTemplate TrapThresholdEditingTemplate()
     {
         var textBox = new FrameworkElementFactory(typeof(TextBox));
+        textBox.SetValue(FrameworkElement.StyleProperty, DataGridTextBoxStyle());
         textBox.SetBinding(TextBox.TextProperty, new Binding(nameof(TrapRow.Threshold))
         {
             Mode = BindingMode.TwoWay,
