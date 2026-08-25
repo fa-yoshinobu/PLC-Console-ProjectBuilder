@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Tooling/Docs: solution、project、namespace、実行ファイル、Release ZIPの名称を`PLCConsoleProjectBuilder`へ統一しました。
 - App: 配色をアクセシビリティ基準に合わせて見直しました。入力部品の枠を`BorderSoft`(白比1.50:1)から新設の`FieldBorder`(3.22:1)へ分離し、`BorderSoft`は罫線・区切り線専用にしました。DataGridのホバー/選択色を1段強め、交互行の上でも判別できるようにしています(ホバー1.04:1→1.18:1、選択1.18:1→1.51:1)。列ヘッダーに背景と2px下線を与え、本文と区別できるようにしました。
 - App: アプリ背景`WindowBg`が唯一の青系(色相210°)だったため、他の中間色と同じ緑系(#EFF4F2)へ統一しました。QRページ番号の孤立した暖色`QrPageFg`は`Accent`に置き換えています。
 - App: ComboBox / CheckBox / Menu / ContextMenu / ScrollBar / Hyperlink / ToolTip をテーマ化し、Windows既定テーマ由来の青(#7EB4EA、#26A0DA、リンク青)が混入しないようにしました。
@@ -25,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- App: List、Time Chart、Trap、Commentの表で、表示文字とチェックボックスが行の上側に寄らず、高さ方向の中央に揃うよう修正しました。
 - App: `PrimaryButton`がControlTemplateの差し替えで無効時トリガーを失っており、無効化しても有効時と同じ見た目のままでした。Paste previewの「Import」ボタンなどが押せるように見える問題を解消しました。
 - App: テキスト選択が既定の`SelectionOpacity`(0.4)と淡い`AccentSoft`の組み合わせでほぼ視認できなかったため、選択ブラシを`Accent`へ変更しました。
 
@@ -32,7 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### BREAKING
 
-- Project JSON: schema識別子を`plc-console-project`へ変更し、旧識別子`plc-io-checker-project`はalias変換せず読込エラーにするようにしました。
+- Project JSON: schema識別子を`plc-console-project`へ統一し、それ以外の識別子はalias変換せず読込エラーにするようにしました。
 - Project JSON: `deviceMeta.dataType`を参照状態に応じた条件付き項目へ変更しました。List / Time Chart / Trapから参照される項目では必須、コメント専用項目では禁止とし、コメント専用項目には空でない`comment`を必須にしました。誤った有無は補完せず読込エラーにします。
 
 ### Changed

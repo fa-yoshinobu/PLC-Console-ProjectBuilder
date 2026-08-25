@@ -2,7 +2,7 @@
 setlocal
 
 set "ROOT=%~dp0"
-set "PROJECT=%ROOT%dotnet\src\PlcIoCheckerQr.Wpf\PlcIoCheckerQr.Wpf.csproj"
+set "PROJECT=%ROOT%dotnet\src\PLCConsoleProjectBuilder.Wpf\PLCConsoleProjectBuilder.Wpf.csproj"
 set "OUT=%ROOT%dotnet\publish\win-x64"
 
 if not exist "%PROJECT%" (

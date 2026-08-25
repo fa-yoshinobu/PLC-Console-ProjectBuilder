@@ -1,0 +1,153 @@
+{
+  "schema": "plc-console-project",
+  "schemaVersion": 2,
+  "exportInfo": {
+    "source": "PROJECT_BUILDER",
+    "version": "1.0.0"
+  },
+  "projectId": "projectbuilder-manual-demo",
+  "projectName": "取扱説明書デモ",
+  "plc": {
+    "vendor": "MELSEC",
+    "cpuModel": "melsec:iq-r",
+    "connection": {
+      "mode": "DEMO_MOCK",
+      "host": "192.168.250.100",
+      "port": 1025,
+      "transport": "TCP",
+      "pollingIntervalMs": 500,
+      "timeoutMs": 2000
+    },
+    "melsec": {
+      "networkNo": 0,
+      "stationNo": 255,
+      "moduleIo": "OwnStation"
+    }
+  },
+  "deviceList": [
+    {
+      "address": "X0"
+    },
+    {
+      "address": "X1"
+    },
+    {
+      "address": "Y0"
+    },
+    {
+      "address": "M100"
+    },
+    {
+      "address": "M101"
+    },
+    {
+      "address": "D100"
+    },
+    {
+      "address": "D101"
+    },
+    {
+      "address": "D110"
+    },
+    {
+      "address": "D120"
+    },
+    {
+      "address": "W20"
+    }
+  ],
+  "timeChart": [
+    {
+      "address": "M100"
+    },
+    {
+      "address": "M101"
+    },
+    {
+      "address": "D100"
+    },
+    {
+      "address": "D120"
+    }
+  ],
+  "deviceMeta": [
+    {
+      "address": "X0",
+      "dataType": "BIT",
+      "comment": "運転開始スイッチ"
+    },
+    {
+      "address": "X1",
+      "dataType": "BIT",
+      "comment": "停止スイッチ"
+    },
+    {
+      "address": "Y0",
+      "dataType": "BIT",
+      "comment": "運転表示ランプ"
+    },
+    {
+      "address": "M100",
+      "dataType": "BIT",
+      "comment": "運転中"
+    },
+    {
+      "address": "M101",
+      "dataType": "BIT",
+      "comment": "異常発生"
+    },
+    {
+      "address": "D100",
+      "dataType": "INT16",
+      "comment": "現在温度"
+    },
+    {
+      "address": "D101",
+      "dataType": "UINT16",
+      "comment": "設定温度"
+    },
+    {
+      "address": "D110",
+      "dataType": "INT32",
+      "comment": "生産数"
+    },
+    {
+      "address": "D120",
+      "dataType": "FLOAT32",
+      "comment": "流量"
+    },
+    {
+      "address": "W20",
+      "dataType": "UINT16",
+      "comment": "アラームコード"
+    },
+    {
+      "address": "D500",
+      "comment": "予備デバイス"
+    }
+  ],
+  "traps": [
+    {
+      "id": "trap-alarm-rise",
+      "enabled": true,
+      "address": "M101",
+      "condition": "RISING_EDGE",
+      "comparisonValue": null
+    },
+    {
+      "id": "trap-high-temperature",
+      "enabled": true,
+      "address": "D100",
+      "condition": "GREATER_OR_EQUAL",
+      "comparisonValue": 80
+    },
+    {
+      "id": "trap-low-flow",
+      "enabled": false,
+      "address": "D120",
+      "condition": "LESS_OR_EQUAL",
+      "comparisonValue": 10.5
+    }
+  ],
+  "updatedAtEpochMs": 1787616000000
+}

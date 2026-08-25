@@ -108,7 +108,6 @@ characters.
 ## Compatibility Policy
 
 Only the `plc-console-project` schema identifier with schema version 2 is
-accepted. The former `plc-io-checker-project` identifier is rejected. Do not add
-silent fallback, alias conversion, or compatibility normalization for older or
-invalid values. Invalid data should fail visibly so QR/JSON bugs are caught
-early.
+accepted. Do not add silent fallback, alias conversion, or compatibility
+normalization for unsupported or invalid values. Invalid data should fail
+visibly so QR/JSON bugs are caught early.

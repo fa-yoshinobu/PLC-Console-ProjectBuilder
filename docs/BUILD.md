@@ -8,7 +8,7 @@ The production app is the .NET WPF implementation under `dotnet/`.
 
 ```powershell
 cd dotnet
-dotnet run --project src\PlcIoCheckerQr.Wpf
+dotnet run --project src\PLCConsoleProjectBuilder.Wpf
 ```
 
 WPF requires Windows Desktop SDK support.
@@ -16,7 +16,7 @@ WPF requires Windows Desktop SDK support.
 ## Tests
 
 ```powershell
-dotnet test dotnet\PlcIoCheckerQr.sln --no-restore
+dotnet test dotnet\PLCConsoleProjectBuilder.sln --no-restore
 ```
 
 ## Build Single-File EXE
@@ -28,7 +28,7 @@ dotnet test dotnet\PlcIoCheckerQr.sln --no-restore
 The executable is written to:
 
 ```text
-dotnet\publish\win-x64\PlcIoCheckerProjectBuilder.exe
+dotnet\publish\win-x64\PLCConsoleProjectBuilder.exe
 ```
 
 Language resources are published to `dotnet\publish\win-x64\Languages\*.json`
@@ -36,5 +36,5 @@ so UI text can be edited without rebuilding. The same resources are also
 embedded in the executable as a fallback when the external language files are
 missing.
 
-The GitHub Release zip contains only `PlcIoCheckerProjectBuilder.exe`; it uses
+The GitHub Release zip contains only `PLCConsoleProjectBuilder.exe`; it uses
 the embedded language resources.

@@ -27,9 +27,9 @@ Instead of entering long PLC settings on a phone, edit the project on a PC and i
 Download the Windows executable package from the release Assets:
 
 - Releases: <https://github.com/fa-yoshinobu/PLC-Console-ProjectBuilder/releases>
-- Asset file: `PlcIoCheckerProjectBuilder-win-x64.zip`
+- Asset file: `PLCConsoleProjectBuilder-win-x64.zip`
 
-Unzip `PlcIoCheckerProjectBuilder-win-x64.zip`, then start `PlcIoCheckerProjectBuilder.exe`.
+Unzip `PLCConsoleProjectBuilder-win-x64.zip`, then start `PLCConsoleProjectBuilder.exe`.
 
 Related repositories:
 
@@ -49,7 +49,7 @@ The supported desktop implementation is the .NET WPF app.
 
 ## Usage
 
-1. Start `PlcIoCheckerProjectBuilder.exe`.
+1. Start `PLCConsoleProjectBuilder.exe`.
 2. Enter the project and PLC settings.
    - Project name
    - Vendor
@@ -86,8 +86,7 @@ Chart channels, 20 Trap definitions, 5 MiB project JSON, 4,096 QR pages, 1 MiB
 compressed QR data, and 5 MiB decompressed QR data. Polling accepts 100–10,000
 ms and timeout accepts 250–10,000 ms independently. ProjectBuilder accepts and
 emits only the `plc-console-project` schema identifier with schema version 2;
-the former `plc-io-checker-project` identifier and other invalid JSON are
-rejected without conversion.
+other identifiers and invalid JSON are rejected without conversion.
 
 In schema v2, `deviceMeta.dataType` is conditional. Metadata referenced by
 List, Time Chart, or Trap must contain `dataType`. Truly comment-only metadata
