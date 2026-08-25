@@ -11,8 +11,8 @@ PLC Console ProjectBuilder の残りの公開作業と保守作業を管理す�
   `PLCConsoleProjectBuilder-win-x64.zip` に `PLCConsoleProjectBuilder.exe` が含まれ、クリーンな Windows PC で起動することを確認する。
 - [ ] 各リリース前に公開マニュアルへのリンクを確認する。
   アプリの Help メニューは `https://plc-console.fa-labo.com/` を開き、上部ヘッダーのリンクは `https://plc-console.fa-labo.com/projectbuilder/projectbuilder.html` を開く。
-- [ ] ZIP 配布のみを継続するか、インストーラーを追加するか決める。
-  現在の配布方法は GitHub Releases からの ZIP のみ。
+- [x] ZIP 配布のみを継続し、インストーラーは追加しない。
+  GitHub Releases では、自己完結型 single-file の `PLCConsoleProjectBuilder.exe` だけを含む ZIP を配布する。
 
 ## 保守メモ
 

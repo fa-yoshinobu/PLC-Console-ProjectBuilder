@@ -29,7 +29,9 @@ Download the Windows executable package from the release Assets:
 - Releases: <https://github.com/fa-yoshinobu/PLC-Console-ProjectBuilder/releases>
 - Asset file: `PLCConsoleProjectBuilder-win-x64.zip`
 
-Unzip `PLCConsoleProjectBuilder-win-x64.zip`, then start `PLCConsoleProjectBuilder.exe`.
+The zip contains only the self-contained Windows x64 executable
+`PLCConsoleProjectBuilder.exe`. No installer, DLL, configuration file, or
+external language file is required. Unzip the package, then start the exe.
 
 Related repositories:
 
@@ -40,33 +42,38 @@ Primary configuration areas:
 
 - PLC connection settings
 - List registration
+- Device comments
 - Time Chart targets
 - Trap settings
 
-This repository contains only the PC-side project builder and QR export tool. The FA Labo PLC Console apps for Android and iOS are separate paid products, and their source code is not included in this repository.
+This repository contains only the PC-side project builder and QR export tool.
+The Android and iOS app source code is maintained in separate repositories and
+is not included here.
 
 The supported desktop implementation is the .NET WPF app.
 
 ## Usage
 
 1. Start `PLCConsoleProjectBuilder.exe`.
-2. Enter the project and PLC settings.
+2. Create a project, or use `File` > `Load JSON` to open an existing schema v2 project.
+3. Enter the project and PLC settings.
    - Project name
    - Vendor
    - CPU model
    - IP address, port, and transport
-3. Register monitored addresses in `List`.
+4. Register monitored addresses in `List`.
    - Rows can be pasted from Excel.
    - Columns are `Address / Data type / Comment`.
-4. Register graph targets in `Time Chart`.
+5. Edit address comments in `Comment`, including comment-only addresses that are not registered in List, Time Chart, or Trap.
+6. Register graph targets in `Time Chart`.
    - Pasted columns are `Address / Data type / Comment`.
    - Up to 20 channels can be imported.
-5. Register trigger rules in `Trap`.
+7. Register trigger rules in `Trap`.
    - Pasted columns are `Address / Data type / Comment / Condition / Threshold / Enabled`.
    - Examples: rising edge, change, greater than or equal.
    - Up to 20 traps can be imported.
-6. Save JSON or generate QR pages.
-7. In the Android/iOS app, open `QR Import` and scan the displayed QR pages in order.
+8. Save JSON, generate QR pages, or save the QR pages as PNG files together with the JSON.
+9. In the Android/iOS app, open `QR Import` and scan every displayed QR page. Pages may be scanned in any order.
 
 Pasting from Excel opens a paste preview dialog that validates every row before
 import. Valid rows are marked OK, invalid rows show the error reason, and rows
@@ -79,7 +86,9 @@ not accepted. During JSON / QR generation, a blank data type is filled only when
 the same address already has one explicit data type in another row. Trap
 conditions that do not match the address kind must be corrected explicitly.
 
-For multi-page QR output, import completes after the mobile app has scanned every page.
+For multi-page QR output, import completes after the mobile app has scanned
+every page once. The page order does not matter. ProjectBuilder can switch the
+displayed pages manually or automatically.
 
 Project limits are shared with the mobile apps: 1,000 List devices, 20 Time
 Chart channels, 20 Trap definitions, 5 MiB project JSON, 4,096 QR pages, 1 MiB
@@ -97,7 +106,8 @@ accept a type on a comment-only entry.
 ## Scanning Tips
 
 - Display each QR as large as possible.
-- Scan one page before moving to the next.
+- Scan each page once. The page order does not matter.
+- For multiple pages, use the automatic page switch when it is easier than pressing Previous / Next.
 - If a device cannot read the QR reliably, reduce the QR chunk size so the tool generates more smaller QR pages.
 - After import, confirm that the project name and List contents changed in the mobile app.
 
@@ -106,6 +116,8 @@ accept a type on a comment-only entry.
 - [Build and development](docs/BUILD.md)
 - [QR/JSON format](docs/QR_JSON_FORMAT.md)
 - [GUI requirements](docs/GUI_REQUIREMENTS.md)
+- [Manual demo project](examples/projectbuilder-manual-demo.json)
+- [Time Chart and Trap example](examples/manual-timechart-trap.json)
 
 ## License
 

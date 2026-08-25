@@ -1,5 +1,7 @@
 # GUI Requirements
 
+Reviewed against the current implementation: 2026-08-26.
+
 This app exists because configuring FA Labo PLC Console projects on a smartphone is
 tedious. The PC GUI should make project data entry easier, then export project
 JSON v2 and QR codes for Android and iOS.
@@ -39,7 +41,9 @@ These settings are necessary, but they are not the product focus:
 - PLC settings
   - Project name, vendor, CPU model, connection mode, PLC IP / host, port,
     transport, monitor interval, timeout, and MELSEC routing fields.
-- QR chunk size, QR display size, QR error correction
+- Existing schema v2 JSON loading, JSON saving, and JSON display
+- QR chunk size, QR display size, QR error correction, and automatic page switching
+- QR PNG files saved together with the generated JSON
 
 They should live in the editor, with output/export controls kept separate from
 the row editing grids.
@@ -51,6 +55,7 @@ JSON structure and selection values:
 
 - `schema`
 - `schemaVersion`
+- `exportInfo`
 - `projectId`
 - `projectName`
 - `plc`
@@ -68,6 +73,9 @@ Store comments once per address in `deviceMeta`; keep `deviceList`,
 Unreferenced, comment-only entries require a non-empty `comment` and must omit
 `dataType`. Reject the wrong presence or absence instead of inferring a value.
 Comments are normalized to one line and limited to 1024 characters.
+
+`exportInfo` is rewritten on export. It records the exporter source and version
+but is not part of project identity. Remote passwords are not exported.
 
 Use uppercase schema enum values in JSON:
 

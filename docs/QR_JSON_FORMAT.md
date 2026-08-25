@@ -3,6 +3,8 @@
 This document describes the app-compatible QR payload and project JSON shape.
 The README is intentionally kept as a user guide.
 
+Reviewed against the current implementation: 2026-08-26.
+
 ## Project JSON
 
 The generated JSON uses the shared `plc-console-project` schema v2 consumed
@@ -50,8 +52,7 @@ Trap entries contain `id`, `enabled`, `address`, `condition`, and
 `comparisonValue`; trap data types are resolved through `deviceMeta`.
 
 MELSEC routing uses decimal `networkNo` / `stationNo` values and a canonical
-`moduleIo` target name. MultiDrop is not emitted and mobile apps communicate
-with MultiDrop fixed to `0x00`. Remote passwords are never emitted in JSON or QR
+`moduleIo` target name. Remote passwords are never emitted in JSON or QR
 payloads; the mobile apps store them in device-local secure storage after the
 user enters them.
 
@@ -93,7 +94,8 @@ PLCIOC1|ZSTD|<session>|<index>|<total>|<sha256>|<payload-chunk>
 - `sha256` is calculated from the minified JSON bytes after decompression.
 - `payload-chunk` is a slice of base64url-encoded Zstd-compressed JSON without padding.
 - QR count is not fixed, but is limited to 4,096 pages.
-- Readers must join all chunks first, then decompress the combined compressed bytes.
+- Pages may be read in any order. Readers arrange chunks by `index`, join all
+  chunks, then decompress the combined compressed bytes.
 
 ## Compression Requirements
 
@@ -102,8 +104,8 @@ app.
 
 Readers and writers limit the compressed QR payload to 1 MiB and the
 decompressed project JSON to 5 MiB. A complete import must contain every index
-from 1 through `total` exactly once. Session identifiers are limited to 128
-characters.
+from 1 through `total` exactly once; missing or duplicate indexes are rejected.
+Session identifiers are limited to 128 characters.
 
 ## Compatibility Policy
 

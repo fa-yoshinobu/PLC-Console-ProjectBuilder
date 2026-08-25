@@ -2,6 +2,8 @@
 
 This document is for developers. The README is focused on app usage.
 
+Reviewed against the current implementation: 2026-08-26.
+
 ## .NET WPF App
 
 The production app is the .NET WPF implementation under `dotnet/`.
@@ -36,5 +38,10 @@ so UI text can be edited without rebuilding. The same resources are also
 embedded in the executable as a fallback when the external language files are
 missing.
 
-The GitHub Release zip contains only `PLCConsoleProjectBuilder.exe`; it uses
-the embedded language resources.
+## GitHub Release Package
+
+The GitHub Release asset is `PLCConsoleProjectBuilder-win-x64.zip`. The archive
+contains only `PLCConsoleProjectBuilder.exe`; the release workflow does not add
+the external `Languages` directory, DLL files, configuration files, or an
+installer. The executable uses the embedded Japanese and English language
+resources.
