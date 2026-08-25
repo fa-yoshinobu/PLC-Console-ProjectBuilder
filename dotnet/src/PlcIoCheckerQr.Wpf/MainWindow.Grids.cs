@@ -87,8 +87,23 @@ public partial class MainWindow
         _trapsGrid.Columns.Add(new DataGridCheckBoxColumn
         {
             Binding = new Binding(nameof(TrapRow.Enabled)) { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged },
+            ElementStyle = GridCheckBoxStyle(interactive: false),
+            EditingElementStyle = GridCheckBoxStyle(interactive: true),
             Width = new DataGridLength(90),
         });
+    }
+
+    // DataGridCheckBoxColumn builds its own element style from scratch, so the
+    // application CheckBox style never reaches it and the cell keeps the Windows
+    // default chrome. Rebase it here, preserving the column's own alignment.
+    private static Style GridCheckBoxStyle(bool interactive)
+    {
+        var style = new Style(typeof(CheckBox), Application.Current.TryFindResource(typeof(CheckBox)) as Style);
+        style.Setters.Add(new Setter(FrameworkElement.HorizontalAlignmentProperty, HorizontalAlignment.Center));
+        style.Setters.Add(new Setter(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Top));
+        style.Setters.Add(new Setter(UIElement.IsHitTestVisibleProperty, interactive));
+        style.Setters.Add(new Setter(UIElement.FocusableProperty, interactive));
+        return style;
     }
 
     private static DataGridTextColumn AddressColumn<T>() where T : DataTypedAddressRow =>
