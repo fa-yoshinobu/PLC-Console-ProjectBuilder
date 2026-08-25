@@ -13,6 +13,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Tests`: テスト、fixture、検証データ。
 - `Tooling`: ビルド、CLI、開発補助。
 
+## [Unreleased] - 2026-08-25
+
+### Changed
+
+- App: 配色をアクセシビリティ基準に合わせて見直しました。入力部品の枠を`BorderSoft`(白比1.50:1)から新設の`FieldBorder`(3.22:1)へ分離し、`BorderSoft`は罫線・区切り線専用にしました。DataGridのホバー/選択色を1段強め、交互行の上でも判別できるようにしています(ホバー1.04:1→1.18:1、選択1.18:1→1.51:1)。列ヘッダーに背景と2px下線を与え、本文と区別できるようにしました。
+- App: アプリ背景`WindowBg`が唯一の青系(色相210°)だったため、他の中間色と同じ緑系(#EFF4F2)へ統一しました。QRページ番号の孤立した暖色`QrPageFg`は`Accent`に置き換えています。
+- App: ComboBox / CheckBox / Menu / ContextMenu / ScrollBar / Hyperlink / ToolTip をテーマ化し、Windows既定テーマ由来の青(#7EB4EA、#26A0DA、リンク青)が混入しないようにしました。
+- App: 意味色(成功/エラー/中立)をApp.xamlへ集約し、PastePreviewWindowの重複定義8件を削除しました。
+- App: 全ボタンにキーボードフォーカスリングを追加しました。フォーカス表示は枠の太さを変えないオーバーレイ方式のため、内容位置は動きません。
+
+### Fixed
+
+- App: `PrimaryButton`がControlTemplateの差し替えで無効時トリガーを失っており、無効化しても有効時と同じ見た目のままでした。Paste previewの「Import」ボタンなどが押せるように見える問題を解消しました。
+- App: テキスト選択が既定の`SelectionOpacity`(0.4)と淡い`AccentSoft`の組み合わせでほぼ視認できなかったため、選択ブラシを`Accent`へ変更しました。
+
 ## [Unreleased] - 2026-08-24
 
 ### BREAKING

@@ -14,14 +14,7 @@
         Foreground="{StaticResource TextMain}">
 
   <Window.Resources>
-    <SolidColorBrush x:Key="PasteOkBg" Color="#E5F5EC"/>
-    <SolidColorBrush x:Key="PasteOkFg" Color="#0E7A46"/>
-    <SolidColorBrush x:Key="PasteErrorBg" Color="#FCE8E6"/>
-    <SolidColorBrush x:Key="PasteErrorFg" Color="#B42318"/>
-    <SolidColorBrush x:Key="PasteSkipBg" Color="#EDF1F0"/>
-    <SolidColorBrush x:Key="PasteSkipFg" Color="#5D6B67"/>
-    <SolidColorBrush x:Key="PasteErrorRowBg" Color="#FDF3F2"/>
-    <SolidColorBrush x:Key="PasteSkipRowBg" Color="#F5F8F7"/>
+    <!-- Semantic colours live in App.xaml; this window only consumes them. -->
 
     <!-- Status badge shown in the Status column -->
     <DataTemplate x:Key="StatusCellTemplate">
@@ -30,21 +23,21 @@
               Padding="10,3"
               HorizontalAlignment="Left"
               VerticalAlignment="Center"
-              Background="{StaticResource PasteOkBg}">
+              Background="{StaticResource SuccessBg}">
         <TextBlock x:Name="BadgeText"
                    Text="{Binding Status}"
                    FontSize="12"
                    FontWeight="SemiBold"
-                   Foreground="{StaticResource PasteOkFg}"/>
+                   Foreground="{StaticResource SuccessFg}"/>
       </Border>
       <DataTemplate.Triggers>
         <DataTrigger Binding="{Binding Kind}" Value="error">
-          <Setter TargetName="Badge" Property="Background" Value="{StaticResource PasteErrorBg}"/>
-          <Setter TargetName="BadgeText" Property="Foreground" Value="{StaticResource PasteErrorFg}"/>
+          <Setter TargetName="Badge" Property="Background" Value="{StaticResource ErrorBg}"/>
+          <Setter TargetName="BadgeText" Property="Foreground" Value="{StaticResource ErrorFg}"/>
         </DataTrigger>
         <DataTrigger Binding="{Binding Kind}" Value="skip">
-          <Setter TargetName="Badge" Property="Background" Value="{StaticResource PasteSkipBg}"/>
-          <Setter TargetName="BadgeText" Property="Foreground" Value="{StaticResource PasteSkipFg}"/>
+          <Setter TargetName="Badge" Property="Background" Value="{StaticResource NeutralBg}"/>
+          <Setter TargetName="BadgeText" Property="Foreground" Value="{StaticResource NeutralFg}"/>
         </DataTrigger>
       </DataTemplate.Triggers>
     </DataTemplate>
@@ -55,7 +48,7 @@
     </Style>
 
     <Style x:Key="ErrorCellTextStyle" TargetType="TextBlock">
-      <Setter Property="Foreground" Value="{StaticResource PasteErrorFg}"/>
+      <Setter Property="Foreground" Value="{StaticResource ErrorFg}"/>
       <Setter Property="TextWrapping" Value="Wrap"/>
       <Setter Property="VerticalAlignment" Value="Center"/>
       <Setter Property="Margin" Value="0,6"/>
@@ -78,23 +71,23 @@
       <StackPanel>
         <TextBlock x:Name="TitleTextBlock" Style="{StaticResource SectionTitle}"/>
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-          <Border Background="{StaticResource PasteOkBg}" CornerRadius="10" Padding="10,3" Margin="0,0,8,0">
+          <Border Background="{StaticResource SuccessBg}" CornerRadius="10" Padding="10,3" Margin="0,0,8,0">
             <TextBlock x:Name="OkCountText"
                        FontSize="12"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource PasteOkFg}"/>
+                       Foreground="{StaticResource SuccessFg}"/>
           </Border>
-          <Border Background="{StaticResource PasteErrorBg}" CornerRadius="10" Padding="10,3" Margin="0,0,8,0">
+          <Border Background="{StaticResource ErrorBg}" CornerRadius="10" Padding="10,3" Margin="0,0,8,0">
             <TextBlock x:Name="ErrorCountText"
                        FontSize="12"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource PasteErrorFg}"/>
+                       Foreground="{StaticResource ErrorFg}"/>
           </Border>
-          <Border Background="{StaticResource PasteSkipBg}" CornerRadius="10" Padding="10,3">
+          <Border Background="{StaticResource NeutralBg}" CornerRadius="10" Padding="10,3">
             <TextBlock x:Name="SkipCountText"
                        FontSize="12"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource PasteSkipFg}"/>
+                       Foreground="{StaticResource NeutralFg}"/>
           </Border>
         </StackPanel>
       </StackPanel>
@@ -116,11 +109,11 @@
         <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
           <Style.Triggers>
             <DataTrigger Binding="{Binding Kind}" Value="error">
-              <Setter Property="Background" Value="{StaticResource PasteErrorRowBg}"/>
+              <Setter Property="Background" Value="{StaticResource ErrorRowBg}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Kind}" Value="skip">
-              <Setter Property="Background" Value="{StaticResource PasteSkipRowBg}"/>
-              <Setter Property="Foreground" Value="{StaticResource PasteSkipFg}"/>
+              <Setter Property="Background" Value="{StaticResource NeutralRowBg}"/>
+              <Setter Property="Foreground" Value="{StaticResource NeutralFg}"/>
             </DataTrigger>
           </Style.Triggers>
         </Style>

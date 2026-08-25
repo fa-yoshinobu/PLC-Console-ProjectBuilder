@@ -183,7 +183,7 @@
                        FontSize="16" FontWeight="SemiBold"
                        Foreground="{StaticResource NavFg}"/>
             <TextBlock x:Name="_pageLabel"
-                       Foreground="{StaticResource QrPageFg}"
+                       Foreground="{StaticResource Accent}"
                        FontSize="15"
                        FontWeight="Bold"
                        TextTrimming="CharacterEllipsis"/>
@@ -610,7 +610,7 @@
                 CornerRadius="16"
                 Padding="28">
           <Viewbox Stretch="Uniform" StretchDirection="Both">
-            <Border Background="White"
+            <Border Background="{StaticResource PanelBg}"
                     BorderBrush="{StaticResource BorderSoft}"
                     BorderThickness="1"
                     CornerRadius="12"
