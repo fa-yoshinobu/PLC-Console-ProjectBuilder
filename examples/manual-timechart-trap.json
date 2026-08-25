@@ -1,0 +1,253 @@
+{
+  "schema": "plc-console-project",
+  "schemaVersion": 2,
+  "exportInfo": {
+    "source": "PROJECT_BUILDER",
+    "version": "1.0.0"
+  },
+  "projectId": "manual-timechart-trap",
+  "projectName": "取扱説明書デモ",
+  "plc": {
+    "vendor": "MELSEC",
+    "cpuModel": "melsec:iq-r",
+    "connection": {
+      "mode": "REAL",
+      "host": "192.168.250.100",
+      "port": 1025,
+      "transport": "TCP",
+      "pollingIntervalMs": 500,
+      "timeoutMs": 2000
+    },
+    "melsec": {
+      "networkNo": 0,
+      "stationNo": 255,
+      "moduleIo": "OwnStation"
+    }
+  },
+  "deviceList": [
+    {
+      "address": "M100"
+    },
+    {
+      "address": "M101"
+    },
+    {
+      "address": "M102"
+    },
+    {
+      "address": "M103"
+    },
+    {
+      "address": "D100"
+    },
+    {
+      "address": "D101"
+    },
+    {
+      "address": "D110"
+    },
+    {
+      "address": "D112"
+    },
+    {
+      "address": "D120"
+    },
+    {
+      "address": "D122"
+    },
+    {
+      "address": "D130"
+    },
+    {
+      "address": "D131"
+    }
+  ],
+  "timeChart": [
+    {
+      "address": "M100"
+    },
+    {
+      "address": "M101"
+    },
+    {
+      "address": "M102"
+    },
+    {
+      "address": "M103"
+    },
+    {
+      "address": "D100"
+    },
+    {
+      "address": "D101"
+    },
+    {
+      "address": "D110"
+    },
+    {
+      "address": "D112"
+    },
+    {
+      "address": "D120"
+    },
+    {
+      "address": "D122"
+    },
+    {
+      "address": "D130"
+    },
+    {
+      "address": "D131"
+    }
+  ],
+  "deviceMeta": [
+    {
+      "address": "M100",
+      "dataType": "BIT",
+      "comment": "運転指令"
+    },
+    {
+      "address": "M101",
+      "dataType": "BIT",
+      "comment": "運転中"
+    },
+    {
+      "address": "M102",
+      "dataType": "BIT",
+      "comment": "異常発生"
+    },
+    {
+      "address": "M103",
+      "dataType": "BIT",
+      "comment": "安全扉"
+    },
+    {
+      "address": "D100",
+      "dataType": "INT16",
+      "comment": "現在温度"
+    },
+    {
+      "address": "D101",
+      "dataType": "UINT16",
+      "comment": "設定温度"
+    },
+    {
+      "address": "D110",
+      "dataType": "INT32",
+      "comment": "生産数"
+    },
+    {
+      "address": "D112",
+      "dataType": "UINT32",
+      "comment": "累積生産数"
+    },
+    {
+      "address": "D120",
+      "dataType": "FLOAT32",
+      "comment": "流量"
+    },
+    {
+      "address": "D122",
+      "dataType": "FLOAT32",
+      "comment": "圧力"
+    },
+    {
+      "address": "D130",
+      "dataType": "INT16",
+      "comment": "温度偏差"
+    },
+    {
+      "address": "D131",
+      "dataType": "UINT16",
+      "comment": "アラームコード"
+    }
+  ],
+  "traps": [
+    {
+      "id": "trap-start-rise",
+      "enabled": true,
+      "address": "M100",
+      "condition": "RISING_EDGE"
+    },
+    {
+      "id": "trap-running-fall",
+      "enabled": true,
+      "address": "M101",
+      "condition": "FALLING_EDGE"
+    },
+    {
+      "id": "trap-alarm-change",
+      "enabled": true,
+      "address": "M102",
+      "condition": "CHANGE"
+    },
+    {
+      "id": "trap-door-rise",
+      "enabled": false,
+      "address": "M103",
+      "condition": "RISING_EDGE"
+    },
+    {
+      "id": "trap-temperature-high",
+      "enabled": true,
+      "address": "D100",
+      "condition": "GREATER_OR_EQUAL",
+      "comparisonValue": 80
+    },
+    {
+      "id": "trap-set-temperature-low",
+      "enabled": true,
+      "address": "D101",
+      "condition": "LESS_OR_EQUAL",
+      "comparisonValue": 60
+    },
+    {
+      "id": "trap-production-target",
+      "enabled": true,
+      "address": "D110",
+      "condition": "EQUAL",
+      "comparisonValue": 1000
+    },
+    {
+      "id": "trap-total-count-nonzero",
+      "enabled": true,
+      "address": "D112",
+      "condition": "NOT_EQUAL",
+      "comparisonValue": 0
+    },
+    {
+      "id": "trap-flow-high",
+      "enabled": true,
+      "address": "D120",
+      "condition": "GREATER_OR_EQUAL",
+      "comparisonValue": 50.5
+    },
+    {
+      "id": "trap-pressure-low",
+      "enabled": true,
+      "address": "D122",
+      "condition": "LESS_OR_EQUAL",
+      "comparisonValue": 10.5
+    },
+    {
+      "id": "trap-deviation-minus-ten",
+      "enabled": true,
+      "address": "D130",
+      "condition": "EQUAL",
+      "comparisonValue": -10
+    },
+    {
+      "id": "trap-alarm-code",
+      "enabled": false,
+      "address": "D131",
+      "condition": "NOT_EQUAL",
+      "comparisonValue": 0
+    }
+  ],
+  "settings": {
+    "blockDisplayDensity": "compact",
+    "timeChartChannelDensity": "compact",
+    "wordBarUpperLimit": 100
+  },
+  "updatedAtEpochMs": 1787669625000
+}
