@@ -86,6 +86,12 @@ not accepted. During JSON / QR generation, a blank data type is filled only when
 the same address already has one explicit data type in another row. Trap
 conditions that do not match the address kind must be corrected explicitly.
 
+Because ProjectBuilder does not communicate with the PLC, it validates address
+syntax and the shared signed 32-bit representation limit but does not enforce a
+CPU-specific Device Range. Android and iOS retrieve that range when connecting,
+then exclude unsupported addresses from display and communication without
+deleting them from the project.
+
 For multi-page QR output, import completes after the mobile app has scanned
 every page once. The page order does not matter. ProjectBuilder can switch the
 displayed pages manually or automatically.

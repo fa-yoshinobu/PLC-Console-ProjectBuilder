@@ -59,6 +59,80 @@ public sealed class ProjectFactoryTests
         Assert.Equal(expectedIsBit, ProjectFactory.IsBitAddress(address, vendor, keyenceDeviceMode, machineLabel));
     }
 
+    [Theory]
+    [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "DM65535", "Int16")]
+    [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "B8000", "Bit")]
+    [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "R200000", "Bit")]
+    [InlineData("Keyence", "Xym", "KEYENCE KV-8000 (XYM)", "X20000", "Bit")]
+    [InlineData("Keyence", "Xym", "KEYENCE KV-8000 (XYM)", "M64000", "Bit")]
+    [InlineData("Keyence", "Xym", "KEYENCE KV-8000 (XYM)", "L16000", "Bit")]
+    public void MakeProjectAllowsAddressesPastOfflineCpuProfileRanges(
+        string vendor,
+        string keyenceDeviceMode,
+        string machineLabel,
+        string address,
+        string dataType)
+    {
+        var project = ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
+            Vendor: vendor,
+            KeyenceDeviceMode: keyenceDeviceMode,
+            MachineLabel: machineLabel,
+            DevicesText: $"{address},{dataType}",
+            WatchText: "",
+            TrapsText: ""));
+
+        Assert.Equal(address, project.Devices.Single().Address);
+    }
+
+    [Theory]
+    [InlineData("Melsec", "Normal", "MELSEC iQ-R (built-in)", "D2147483648")]
+    [InlineData("Melsec", "Normal", "MELSEC iQ-R (built-in)", "W80000000")]
+    [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "R2147483700")]
+    [InlineData("Keyence", "Xym", "KEYENCE KV-8000 (XYM)", "X1342177280")]
+    public void MakeProjectRejectsAddressesPastCommonTechnicalLimit(
+        string vendor,
+        string keyenceDeviceMode,
+        string machineLabel,
+        string address)
+    {
+        Assert.Throws<ArgumentException>(() =>
+            ProjectFactory.ValidateDeviceAddress(address, vendor, keyenceDeviceMode, machineLabel));
+    }
+
+    [Theory]
+    [InlineData("D2147483647,UInt32")]
+    [InlineData("D2147483647,Float32")]
+    [InlineData("W7FFFFFFF,Int32")]
+    public void MakeProjectRejectsMultiwordDataPastCommonTechnicalLimit(string devicesText)
+    {
+        var exception = Assert.Throws<ArgumentException>(() => ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
+            DevicesText: devicesText,
+            WatchText: "",
+            TrapsText: "")));
+
+        Assert.Contains("technical device address limit", exception.Message);
+    }
+
+    [Fact]
+    public void MakeProjectAllowsMultiwordDataEndingAtCommonTechnicalLimit()
+    {
+        var project = ProjectFactory.MakeProject(ProjectInputBuilder.MakeInput(
+            DevicesText: "D2147483646,UInt32",
+            WatchText: "",
+            TrapsText: ""));
+
+        Assert.Equal("D2147483646", project.Devices.Single().Address);
+        Assert.Equal("UInt32", project.Devices.Single().DataType);
+    }
+
+    [Fact]
+    public void DataTypeChoicesExcludeMultiwordTypesAtCommonTechnicalLimit()
+    {
+        Assert.Equal(
+            ["Int16", "UInt16"],
+            ProjectFactory.DeviceDataTypesForAddress("D2147483647", "Melsec"));
+    }
+
     [Fact]
     public void UnknownAddressFamilyKeepsDataTypeChoicesOpenUntilValidated()
     {

@@ -264,35 +264,35 @@ public static partial class ProjectFactory
 
     private static readonly DeviceFamilyRule[] KeyenceNormalDeviceFamilies =
     [
-        Bit("R", DeviceAddressNumberFormat.KeyenceBitBank, maxNumber: 199915),
-        Bit("B", DeviceAddressNumberFormat.Hex, maxNumber: 0x7FFF),
-        Bit("MR", DeviceAddressNumberFormat.KeyenceBitBank, maxNumber: 399915),
-        Bit("LR", DeviceAddressNumberFormat.KeyenceBitBank, maxNumber: 99915),
-        Bit("CR", DeviceAddressNumberFormat.KeyenceBitBank, maxNumber: 7915),
-        Word("DM", maxNumber: 65534),
-        Word("EM", maxNumber: 65534),
-        Word("FM", maxNumber: 32767),
-        Word("ZF", maxNumber: 524287),
-        Word("W", DeviceAddressNumberFormat.Hex, maxNumber: 0x7FFF),
-        Word("TM", maxNumber: 511),
-        Word("CM", maxNumber: 7599),
+        Bit("R", DeviceAddressNumberFormat.KeyenceBitBank),
+        Bit("B", DeviceAddressNumberFormat.Hex),
+        Bit("MR", DeviceAddressNumberFormat.KeyenceBitBank),
+        Bit("LR", DeviceAddressNumberFormat.KeyenceBitBank),
+        Bit("CR", DeviceAddressNumberFormat.KeyenceBitBank),
+        Word("DM"),
+        Word("EM"),
+        Word("FM"),
+        Word("ZF"),
+        Word("W", DeviceAddressNumberFormat.Hex),
+        Word("TM"),
+        Word("CM"),
     ];
 
     private static readonly DeviceFamilyRule[] KeyenceXymDeviceFamilies =
     [
-        Bit("B", DeviceAddressNumberFormat.Hex, maxNumber: 0x7FFF),
-        Bit("CR", DeviceAddressNumberFormat.KeyenceBitBank, maxNumber: 7915),
-        Word("ZF", maxNumber: 524287),
-        Word("W", DeviceAddressNumberFormat.Hex, maxNumber: 0x7FFF),
-        Word("TM", maxNumber: 511),
-        Word("CM", maxNumber: 7599),
-        Bit("X", DeviceAddressNumberFormat.KeyenceXymBit, maxNumber: 1999 * 16 + 15),
-        Bit("Y", DeviceAddressNumberFormat.KeyenceXymBit, maxNumber: 1999 * 16 + 15),
-        Bit("M", maxNumber: 63999),
-        Bit("L", maxNumber: 15999),
-        Word("D", maxNumber: 65534),
-        Word("E", maxNumber: 65534),
-        Word("F", maxNumber: 32767),
+        Bit("B", DeviceAddressNumberFormat.Hex),
+        Bit("CR", DeviceAddressNumberFormat.KeyenceBitBank),
+        Word("ZF"),
+        Word("W", DeviceAddressNumberFormat.Hex),
+        Word("TM"),
+        Word("CM"),
+        Bit("X", DeviceAddressNumberFormat.KeyenceXymBit),
+        Bit("Y", DeviceAddressNumberFormat.KeyenceXymBit),
+        Bit("M"),
+        Bit("L"),
+        Word("D"),
+        Word("E"),
+        Word("F"),
     ];
 
     public static PlcProject MakeProject(ProjectInput input, long? nowEpochMs = null)
@@ -838,12 +838,35 @@ public static partial class ProjectFactory
         string name)
     {
         var allowed = DeviceDataTypesForAddress(address, vendor, keyenceDeviceMode, machineLabel);
+        ValidateDataTypeAddressSpan(address, dataType, vendor, keyenceDeviceMode, machineLabel, name);
         if (allowed.Contains(dataType, StringComparer.Ordinal))
         {
             return dataType;
         }
 
         throw new ArgumentException($"Invalid {name} for {address}: {dataType}. Use one of: {string.Join(", ", allowed)}");
+    }
+
+    private static void ValidateDataTypeAddressSpan(
+        string address,
+        string dataType,
+        string vendor,
+        string keyenceDeviceMode,
+        string? machineLabel,
+        string name)
+    {
+        var wordSpan = dataType is "Int32" or "UInt32" or "Float32" ? 2u : 1u;
+        if (wordSpan == 1 ||
+            !TryResolveDeviceFamily(address, vendor, keyenceDeviceMode, machineLabel, out var family, out var parsedAddress) ||
+            family.IsBit)
+        {
+            return;
+        }
+
+        if (parsedAddress.Number > MaximumDeviceIndex - (wordSpan - 1))
+        {
+            throw new ArgumentException($"Invalid {name} for {address}: {dataType} exceeds the technical device address limit.");
+        }
     }
 
     private static bool TryNormalizeDeviceDataType(string text, out string dataType)
@@ -874,11 +897,20 @@ public static partial class ProjectFactory
             return DeviceDataTypes;
         }
 
-        return TryResolveDeviceFamily(address, vendor, keyenceDeviceMode, machineLabel, out var family)
-            ? family.IsBit
-                ? ["Bit"]
-                : DeviceDataTypes.Where(dataType => dataType != "Bit").ToArray()
-            : DeviceDataTypes;
+        if (!TryResolveDeviceFamily(address, vendor, keyenceDeviceMode, machineLabel, out var family, out var parsedAddress))
+        {
+            return DeviceDataTypes;
+        }
+        if (family.IsBit)
+        {
+            return ["Bit"];
+        }
+
+        var availableWordSpan = MaximumDeviceIndex - parsedAddress.Number + 1;
+        return DeviceDataTypes
+            .Where(dataType => dataType != "Bit")
+            .Where(dataType => availableWordSpan >= (dataType is "Int32" or "UInt32" or "Float32" ? 2u : 1u))
+            .ToArray();
     }
 
     public static bool IsBitAddress(string address, string vendor) => IsBitAddress(address, vendor, "Normal");
@@ -971,10 +1003,9 @@ public static partial class ProjectFactory
         {
             var nextLogicalNumber = checked(startLogicalNumber + (uint)offset);
             var nextNumber = FromLogicalNumber(nextLogicalNumber, family.NumberFormat);
-            if (nextNumber < family.MinNumber ||
-                (family.MaxNumber is not null && nextNumber > family.MaxNumber.Value))
+            if (nextNumber < family.MinNumber || nextNumber > MaximumDeviceIndex)
             {
-                throw new ArgumentOutOfRangeException(nameof(count), count, $"Device block exceeds supported range for {family.Code}.");
+                throw new ArgumentOutOfRangeException(nameof(count), count, $"Device block exceeds the technical address limit for {family.Code}.");
             }
 
             addresses.Add(FormatDeviceAddress(family, nextNumber, parsedAddress.Width));
@@ -1042,7 +1073,7 @@ public static partial class ProjectFactory
             var numberText = normalized[candidate.Code.Length..];
             if (TryParseAddressNumber(numberText, candidate.NumberFormat, out var number) &&
                 number >= candidate.MinNumber &&
-                (candidate.MaxNumber is null || number <= candidate.MaxNumber.Value))
+                number <= MaximumDeviceIndex)
             {
                 family = candidate;
                 parsedAddress = new DeviceAddressParse(number, numberText.Length);
@@ -1203,19 +1234,19 @@ public static partial class ProjectFactory
             : bank.ToString(CultureInfo.InvariantCulture) + bit.ToString("X", CultureInfo.InvariantCulture);
     }
 
+    private const uint MaximumDeviceIndex = int.MaxValue;
+
     private static DeviceFamilyRule Bit(
         string code,
         DeviceAddressNumberFormat numberFormat = DeviceAddressNumberFormat.Decimal,
-        uint minNumber = 0,
-        uint? maxNumber = null) =>
-        new(code, true, numberFormat, minNumber, maxNumber);
+        uint minNumber = 0) =>
+        new(code, true, numberFormat, minNumber);
 
     private static DeviceFamilyRule Word(
         string code,
         DeviceAddressNumberFormat numberFormat = DeviceAddressNumberFormat.Decimal,
-        uint minNumber = 0,
-        uint? maxNumber = null) =>
-        new(code, false, numberFormat, minNumber, maxNumber);
+        uint minNumber = 0) =>
+        new(code, false, numberFormat, minNumber);
 
     [GeneratedRegex("[^a-z0-9]+")]
     private static partial Regex SlugRegex();
@@ -1233,8 +1264,7 @@ public static partial class ProjectFactory
         string Code,
         bool IsBit,
         DeviceAddressNumberFormat NumberFormat,
-        uint MinNumber,
-        uint? MaxNumber);
+        uint MinNumber);
 
     private readonly record struct DeviceAddressParse(uint Number, int Width);
 }

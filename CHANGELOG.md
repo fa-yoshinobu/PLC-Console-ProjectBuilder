@@ -13,6 +13,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Tests`: テスト、fixture、検証データ。
 - `Tooling`: ビルド、CLI、開発補助。
 
+## [Unreleased] - 2026-08-26
+
+### Changed
+
+- App/Project JSON: オフラインのデバイス登録ではPLC機種固有のDevice Rangeを上限判定に使わず、Normal／XYMの対応記号、進数・bit-bank表記、負数、両モバイルと共通の`Int32`アドレス表現上限だけを検証するようにしました。実PLC固有の対応範囲はモバイルアプリが接続後に取得したcatalogで判定します。
+- App: 32-bit値の先頭アドレスでは2word目までが共通技術上限内に収まることを確認し、ProjectBuilderで生成できてもモバイルアプリへ取り込めないデータを作らないようにしました。
+
+### Tests
+
+- Tests: KEYENCEのprofile終端を越える構文上有効なアドレスとblock生成を許可し、不正な進数・bit-bank表記、`Int32`超過、複数word終端超過だけを拒否する回帰テストへ更新しました。
+
 ## [Unreleased] - 2026-08-25
 
 ### Changed

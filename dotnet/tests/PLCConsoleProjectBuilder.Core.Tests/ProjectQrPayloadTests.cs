@@ -481,14 +481,12 @@ public sealed class ProjectQrPayloadTests
 
     [Theory]
     [InlineData("Melsec", "Normal", "MELSEC iQ-R (built-in)", "DFFFF")]
+    [InlineData("Melsec", "Normal", "MELSEC iQ-R (built-in)", "D-1")]
     [InlineData("Melsec", "Normal", "MELSEC iQ-F (built-in)", "X78")]
     [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "R016")]
     [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "CR7916")]
-    [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "DM65535")]
-    [InlineData("Keyence", "Normal", "KEYENCE KV-8000", "B8000")]
     [InlineData("Keyence", "Xym", "KEYENCE KV-8000 (XYM)", "X3A0")]
     [InlineData("Keyence", "Xym", "KEYENCE KV-8000 (XYM)", "Y19A0")]
-    [InlineData("Keyence", "Xym", "KEYENCE KV-8000 (XYM)", "X20000")]
     public void ProjectFactoryRejectsInvalidDeviceAddressNumberFormats(
         string vendor,
         string keyenceDeviceMode,
@@ -581,10 +579,14 @@ public sealed class ProjectQrPayloadTests
         Assert.Equal(
             ["X0", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "X8", "X9", "XA", "XB", "XC", "XD", "XE", "XF", "X10"],
             ProjectFactory.BuildDeviceBlock("X0", 17, "Keyence", "Xym"));
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        Assert.Equal(
+            ["X1999F", "X20000"],
             ProjectFactory.BuildDeviceBlock("X1999F", 2, "Keyence", "Xym"));
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        Assert.Equal(
+            ["R199915", "R200000"],
             ProjectFactory.BuildDeviceBlock("R199915", 2, "Keyence", "Normal"));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            ProjectFactory.BuildDeviceBlock("D2147483647", 2, "Melsec"));
     }
 
     [Theory]

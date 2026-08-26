@@ -32,6 +32,12 @@ independently and marked OK, error (with the reason), or skipped (blank
 address). Import applies only the OK rows; error rows are never silently
 converted and must be fixed in the source data.
 
+ProjectBuilder is offline and must not use a selected CPU model's Device Range
+as an address limit. Address validation covers the Normal/XYM device set,
+notation and radix rules, negative values, the shared signed 32-bit device-index
+limit, and multiword span overflow. The mobile app applies the actual PLC Device
+Range only after it connects and retrieves the runtime catalog.
+
 ## Supporting Workflows
 
 These settings are necessary, but they are not the product focus:
