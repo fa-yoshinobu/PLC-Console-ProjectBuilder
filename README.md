@@ -22,6 +22,12 @@ Instead of entering long PLC settings on a phone, edit the project on a PC and i
 - Manual site: <https://plc-console.fa-labo.com/>
 - ProjectBuilder manual: <https://plc-console.fa-labo.com/projectbuilder/projectbuilder.html>
 
+## Mobile App
+
+FA Labo PLC Console for iPhone and iPad is available on the App Store.
+
+<a href="https://apps.apple.com/jp/app/fa-labo-plc-console/id6783619471"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/ja-jp?size=250x83" alt="App Storeからダウンロード" height="48"></a>
+
 ## Download
 
 Download the Windows executable package from the release Assets:
