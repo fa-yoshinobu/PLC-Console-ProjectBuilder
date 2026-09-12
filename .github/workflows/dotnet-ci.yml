@@ -9,6 +9,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
@@ -19,7 +23,48 @@ env:
   WPF_PROJECT: dotnet/src/PLCConsoleProjectBuilder.Wpf/PLCConsoleProjectBuilder.Wpf.csproj
 
 jobs:
+  changes:
+    name: Detect code changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect documentation-only changes
+        id: filter
+        shell: python
+        run: |
+          import json, os, subprocess
+          from pathlib import PurePosixPath
+
+          def documentation(path):
+              return path in {"README.md", "CHANGELOG.md"} or (
+                  path.startswith("docs/") and PurePosixPath(path).suffix == ".md"
+              )
+
+          with open(os.environ["GITHUB_EVENT_PATH"]) as source:
+              event = json.load(source)
+          files = []
+          if os.environ["GITHUB_EVENT_NAME"] == "pull_request":
+              pr = event["pull_request"]
+              revision = pr["base"]["sha"] + "..." + pr["head"]["sha"]
+          elif os.environ["GITHUB_EVENT_NAME"] == "push" and event["before"].strip("0"):
+              revision = event["before"] + ".." + event["after"]
+          else:
+              revision = None
+          if revision:
+              files = subprocess.check_output([
+                  "git", "diff", "--name-only", "--no-renames", "-z", revision
+              ]).decode().split("\0")[:-1]
+          code = not files or not all(documentation(path) for path in files)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"code={str(code).lower()}\n")
+
   build-test:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}
     name: Build and test
     runs-on: windows-latest
 

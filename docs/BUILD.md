@@ -45,3 +45,15 @@ contains only `PLCConsoleProjectBuilder.exe`; the release workflow does not add
 the external `Languages` directory, DLL files, configuration files, or an
 installer. The executable uses the embedded Japanese and English language
 resources.
+
+## Distribution Maintenance
+
+The Windows package is distributed without code signing or an installer.
+Build outputs under `dotnet/publish/` and `artifacts/` are excluded from Git.
+When updating the package, verify that the release ZIP contains only
+`PLCConsoleProjectBuilder.exe` and that it starts on a clean Windows PC.
+
+When changing manual URLs or the app's help links, verify both destinations:
+
+- Help menu: <https://plc-console.fa-labo.com/>
+- Header link: <https://plc-console.fa-labo.com/projectbuilder/projectbuilder.html>

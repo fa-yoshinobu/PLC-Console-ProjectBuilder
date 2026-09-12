@@ -24,8 +24,9 @@ Instead of entering long PLC settings on a phone, edit the project on a PC and i
 
 ## Mobile App
 
-FA Labo PLC Console for iPhone and iPad is available on the App Store.
+FA Labo PLC Console is available for Android on Google Play and for iPhone and iPad on the App Store.
 
+<a href="https://play.google.com/store/apps/details?id=com.fa_labo.plc_io_checker"><img src="https://plc-console.fa-labo.com/assets/images/store/google-play-ja.svg" alt="Google Play で手に入れよう" height="48"></a>
 <a href="https://apps.apple.com/jp/app/fa-labo-plc-console/id6783619471"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/ja-jp?size=250x83" alt="App Storeからダウンロード" height="48"></a>
 
 ## Download
