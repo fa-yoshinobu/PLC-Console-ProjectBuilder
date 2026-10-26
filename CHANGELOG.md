@@ -2,7 +2,7 @@
 
 All notable changes to PLC Console ProjectBuilder will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 **Entry labels**
 
@@ -13,9 +13,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Tests`: テスト、fixture、検証データ。
 - `Tooling`: ビルド、CLI、開発補助。
 
-## [Unreleased] - 2026-08-26
+## [Unreleased]
 
 ### Changed
+
+- Standardized fixed-name Windows ZIP assets, ZIP SHA-256 checksums and English release notes.
 
 - App/Project JSON: オフラインのデバイス登録ではPLC機種固有のDevice Rangeを上限判定に使わず、Normal／XYMの対応記号、進数・bit-bank表記、負数、両モバイルと共通の`Int32`アドレス表現上限だけを検証するようにしました。実PLC固有の対応範囲はモバイルアプリが接続後に取得したcatalogで判定します。
 - App: 32-bit値の先頭アドレスでは2word目までが共通技術上限内に収まることを確認し、ProjectBuilderで生成できてもモバイルアプリへ取り込めないデータを作らないようにしました。
@@ -24,8 +26,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Tests: KEYENCEのprofile終端を越える構文上有効なアドレスとblock生成を許可し、不正な進数・bit-bank表記、`Int32`超過、複数word終端超過だけを拒否する回帰テストへ更新しました。
 
-## [Unreleased] - 2026-08-25
+### Fixed
 
+- Unified VirusTotal completion checks and preserved unrelated release notes during rescans.
+
+## [Unreleased]
 ### Changed
 
 - Tooling/Docs: solution、project、namespace、実行ファイル、Release ZIPの名称を`PLCConsoleProjectBuilder`へ統一しました。
@@ -41,8 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - App: `PrimaryButton`がControlTemplateの差し替えで無効時トリガーを失っており、無効化しても有効時と同じ見た目のままでした。Paste previewの「Import」ボタンなどが押せるように見える問題を解消しました。
 - App: テキスト選択が既定の`SelectionOpacity`(0.4)と淡い`AccentSoft`の組み合わせでほぼ視認できなかったため、選択ブラシを`Accent`へ変更しました。
 
-## [Unreleased] - 2026-08-24
-
+## [Unreleased]
 ### BREAKING
 
 - Project JSON: schema識別子を`plc-console-project`へ統一し、それ以外の識別子はalias変換せず読込エラーにするようにしました。
@@ -53,23 +57,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - App/Tests: MELSEC積算タイマ現在値`STN`を16-bit wordデバイスとして、Project生成・対応デバイス候補・データ型検証へ追加しました。
 - App/Tests: ProjectBuilderは未参照のコメント専用行をデータ型なしで保持・再出力し、Core出力とWPF読込の条件付き`deviceMeta`規則を焦点を絞ったテストで確認するようにしました。
 
-## [Unreleased] - 2026-08-23
-
+## [Unreleased]
 ### Changed
 
 - Project JSON: `deviceMeta` の上限を、List / Time Chart / Trap が参照する正規化済みアドレス1,040件と、参照されないコメント専用アドレス100,000件に分離しました。コメント専用項目は空コメントを許可せず、JSON全体5 MiBの最終上限は維持します。
 - App: Project JSON importでも同じ上限構成を受け入れ、コメント件数が1,040件を超えるだけでは拒否しないようにしました。
 - Docs/Tests: コメント専用`deviceMeta`の条件と上限を仕様書へ追記し、Coreの上限検証を更新しました。
 
-## [Unreleased] - 2026-08-14
-
+## [Unreleased]
 ### Changed
 
 - App/Docs: ProjectBuilder の利用者向け名称を `PLC Console ProjectBuilder` に、モバイルアプリへの公開上の言及を `FA Labo PLC Console` に更新しました。実行ファイル名と内部識別子は変更していません。
 - App/Docs: GitHub repository の改名に合わせて repository・Release・Security Advisory のURLを更新し、アプリと文書のマニュアルURLを `https://plc-console.fa-labo.com/` へ移行しました。
 
-## [Unreleased] - 2026-07-17
-
+## [Unreleased]
 ### Changed
 
 - Project JSON: schemaをversion 2へ更新し、旧version、未知項目、重複、不正値、上限超過を変換・切捨てせず拒否するようにしました。
@@ -82,8 +83,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Docs: READMEとQR/JSON仕様をschema v2と共通上限へ更新しました。
 - Tests: ID維持、timing範囲、数値範囲、QR chunk完全性と上限のCoreテストを追加しました。
 
-## [Unreleased] - 2026-07-06
-
+## [Unreleased]
 ### BREAKING
 
 - Project JSON: MELSEC 接続の `melsec.moduleIoNo`(16進文字列)を廃止し、正準13名の
@@ -97,8 +97,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - App: ユニットI/O の入力を自由入力テキストから正準13択のプルダウンに変更し、表示は Android/iOS と同じ和英ラベルに統一しました。
 
-## [Unreleased] - 2026-07-05
-
+## [Unreleased]
 ### Changed
 
 - Project JSON: PLC 機種候補を Android/iOS の新しい通信プロファイルに合わせ、`melsec:qcpu` を廃止してユニット付き MELSEC / KEYENCE KV-NANO 候補を出力できるようにしました。
@@ -114,8 +113,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - App: 各タブに「Excel ▾」メニューボタンを追加しました。ショートカットを知らなくても貼り付け / 選択行コピー / テンプレート(ヘッダー行)コピーを実行できます。
 - Tests: ProjectBuilder の機種表示ラベルと `plc.cpuModel` の相互変換が、新しい候補一覧に一致することを確認する Core テストを更新しました。
 
-## [Unreleased] - 2026-06-28
-
+## [Unreleased]
 ### Changed
 
 - App: Clipboard import は明示されたデータ型と Trap 条件を必須にし、別名変換、データ型推測、Trap 条件の既定値補完で成功扱いにしないようにしました。
@@ -136,8 +134,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Tests: Clipboard import が別名、未指定データ型、不正 Trap 条件を受け付けないことを確認する WPF テストを追加・更新しました。
 - Tests: JSON / QR 生成で、同一アドレスの明示済み型だけが未指定行へ補完され、明示型の衝突はエラーになることを確認する Core テストを追加しました。
 
-## [Unreleased] - 2026-06-27
-
+## [Unreleased]
 ### Changed
 
 - Project JSON: Project JSON を初回公開向けの schema v1 として整理しました。
