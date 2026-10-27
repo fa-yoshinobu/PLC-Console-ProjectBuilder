@@ -139,9 +139,9 @@ accept a type on a comment-only entry.
 | License | [MIT](LICENSE) |
 | Scope | Applies only to the PC-side project builder and QR export tool in this repository. It does not include the FA Labo PLC Console mobile apps for Android/iOS. |
 
-## Release distribution (next release)
+## Release distribution
 
-The fixed-name ZIP and checksum links below become available with the next standard release. Existing release assets and the download links above remain unchanged.
+The fixed-name ZIP and checksum links below are available for the current release. Older releases retain their original assets.
 
 - [Latest Windows x64 ZIP](https://github.com/fa-yoshinobu/PLC-Console-ProjectBuilder/releases/latest/download/PLCConsoleProjectBuilder-win-x64.zip)
 - [ZIP SHA-256 checksum](https://github.com/fa-yoshinobu/PLC-Console-ProjectBuilder/releases/latest/download/PLCConsoleProjectBuilder-win-x64.zip.sha256)
