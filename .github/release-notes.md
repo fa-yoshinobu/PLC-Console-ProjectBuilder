@@ -9,13 +9,9 @@ Requirements: Windows x64. The .NET runtime is included.
 
 ## Changes
 ### Changed
-- Validate offline device addresses using shared syntax and Int32 limits instead of model-specific device ranges; connected mobile apps validate the actual PLC catalog.
-- Reject 32-bit values whose second word would exceed the shared address limit.
-- Updated regression tests for valid KEYENCE addresses and invalid number, bit-bank and multiword ranges.
-- Standardized Windows ZIP distribution, checksums and release documentation.
-
-### Fixed
-- Wait for VirusTotal analysis to complete and preserve unrelated release notes when updating scan results.
+- Migrated the app, core library, tests and build workflows to .NET 10.
+- The Windows executable includes .NET 10.0.14; no separate runtime installation is required.
+- Updated build documentation and QR export version metadata for this release.
 
 <!-- virustotal:start -->
 {{VIRUSTOTAL_CONTENT}}

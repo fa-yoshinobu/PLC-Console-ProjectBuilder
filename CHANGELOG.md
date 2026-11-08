@@ -13,11 +13,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `Tests`: テスト、fixture、検証データ。
 - `Tooling`: ビルド、CLI、開発補助。
 
-## [Unreleased]
+## [1.0.2] - 2026-11-08
+
+### Changed
+
+- Tooling/App: .NET 10へ移行し、Windows配布EXEに.NET 10.0.14を同梱。アプリ・テスト・CIの対象バージョンを更新。
 
 ### Fixed
 
-- Tests: Align the QR export metadata expectation with release version 1.0.1.
+- Tests: Align the QR export metadata expectation with release version 1.0.2.
 
 ## [1.0.1] - 2026-10-27
 

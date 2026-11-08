@@ -13,7 +13,7 @@ cd dotnet
 dotnet run --project src\PLCConsoleProjectBuilder.Wpf
 ```
 
-WPF requires Windows Desktop SDK support.
+WPF requires the .NET 10 SDK on Windows.
 
 ## Tests
 
@@ -47,6 +47,10 @@ installer. The executable uses the embedded Japanese and English language
 resources.
 
 ## Distribution Maintenance
+
+The self-contained EXE bundles .NET 10.0.14; users do not need to install .NET.
+Update `RuntimeFrameworkVersion` in the WPF project and rebuild the distribution
+when installing runtime security updates.
 
 The Windows package is distributed without code signing or an installer.
 Build outputs under `dotnet/publish/` and `artifacts/` are excluded from Git.
