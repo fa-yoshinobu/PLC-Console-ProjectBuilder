@@ -36,15 +36,18 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Validate release version
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+        run: |
+          if ($env:RELEASE_TAG -cnotmatch '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$') { throw 'Use a SemVer tag such as v1.2.3.' }
+          [xml]$project = Get-Content 'dotnet/src/PLCConsoleProjectBuilder.Wpf/PLCConsoleProjectBuilder.Wpf.csproj'
+          if ([string]$project.Project.PropertyGroup.Version -cne $env:RELEASE_TAG.Substring(1)) { throw 'Release tag must match application version.' }
+
       - name: Publish single-file app
         shell: cmd
         run: build-dotnet-onefile.bat
-
-      - name: Package release asset
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-          Compress-Archive -Path "dotnet/publish/win-x64/PLCConsoleProjectBuilder.exe" -DestinationPath "artifacts/PLCConsoleProjectBuilder-win-x64.zip" -Force
 
       - name: Set up release tools
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -56,7 +59,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
         run: |
-          python .github/scripts/release_assets.py prepare --repository "$env:GITHUB_REPOSITORY" --release-tag "$env:RELEASE_TAG" --asset-name PLCConsoleProjectBuilder-win-x64.zip --zip artifacts/PLCConsoleProjectBuilder-win-x64.zip
+          python .github/scripts/release_assets.py prepare --repository "$env:GITHUB_REPOSITORY" --release-tag "$env:RELEASE_TAG" --asset-name PLCConsoleProjectBuilder-win-x64.zip --zip artifacts/release/PLCConsoleProjectBuilder-win-x64.zip
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Publish ZIP and checksum

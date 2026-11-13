@@ -154,3 +154,5 @@ Windows x64. The .NET runtime is included.
 Release notes and VirusTotal scan messages are in English. Existing project documents may keep their current language.
 
 Maintainers: update the English Changes section in `.github/release-notes.md` from the relevant CHANGELOG entries before releasing. The release workflow publishes the ZIP and checksum, then scans the actual published executables. Use the `Scan release with VirusTotal` workflow with a release tag to retry an incomplete scan. See the [shared release standard](https://github.com/fa-yoshinobu/release_standard).
+
+ローカル配布物は `build-dotnet-onefile.bat` で作成します。起動EXEは `artifacts/release/PLCConsoleProjectBuilder.exe`、配布ZIPは `artifacts/release/PLCConsoleProjectBuilder-win-x64.zip`、SHA-256は同ZIPの `.sha256` です。ZIPを展開し、EXEを直接起動してください。旧出力フォルダーは自動削除しません。

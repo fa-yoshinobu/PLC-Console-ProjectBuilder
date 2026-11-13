@@ -41,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 ### Changed
 
+- Align local and CI executable, fixed-name ZIP and UTF-8/LF SHA-256 output under `artifacts/release/`; preserve required distribution files and require the VirusTotal API SHA-256 to match.
 - Tooling/Docs: solution、project、namespace、実行ファイル、Release ZIPの名称を`PLCConsoleProjectBuilder`へ統一しました。
 - App: 配色をアクセシビリティ基準に合わせて見直しました。入力部品の枠を`BorderSoft`(白比1.50:1)から新設の`FieldBorder`(3.22:1)へ分離し、`BorderSoft`は罫線・区切り線専用にしました。DataGridのホバー/選択色を1段強め、交互行の上でも判別できるようにしています(ホバー1.04:1→1.18:1、選択1.18:1→1.51:1)。列ヘッダーに背景と2px下線を与え、本文と区別できるようにしました。
 - App: アプリ背景`WindowBg`が唯一の青系(色相210°)だったため、他の中間色と同じ緑系(#EFF4F2)へ統一しました。QRページ番号の孤立した暖色`QrPageFg`は`Accent`に置き換えています。

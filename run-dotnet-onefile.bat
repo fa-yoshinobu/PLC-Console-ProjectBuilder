@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set "EXE=%~dp0dotnet\publish\win-x64\PLCConsoleProjectBuilder.exe"
+set "EXE=%~dp0artifacts\release\PLCConsoleProjectBuilder.exe"
 
 if not exist "%EXE%" (
   call "%~dp0build-dotnet-onefile.bat"

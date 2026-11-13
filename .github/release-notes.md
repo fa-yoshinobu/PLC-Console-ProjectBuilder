@@ -3,15 +3,14 @@
 - [SHA-256 checksum]({{CHECKSUM_URL}})
 
 ## Getting started
-Extract the ZIP file, then run `PLCConsoleProjectBuilder.exe`.
+Extract the ZIP file, then run `PLCConsoleProjectBuilder.exe`. Keep the `Languages` folder beside the executable.
 
-Requirements: Windows x64. The .NET runtime is included.
+Requirements: Windows 10 or later (x64). The .NET runtime is included.
 
 ## Changes
 ### Changed
-- Migrated the app, core library, tests and build workflows to .NET 10.
-- The Windows executable includes .NET 10.0.14; no separate runtime installation is required.
-- Updated build documentation and QR export version metadata for this release.
+- Align local and CI executable, fixed-name distribution ZIP and SHA-256 output under `artifacts/release/`.
+- Require the VirusTotal API SHA-256 to match every published executable before reporting a completed scan.
 
 <!-- virustotal:start -->
 {{VIRUSTOTAL_CONTENT}}
