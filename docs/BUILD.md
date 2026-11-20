@@ -48,7 +48,7 @@ resources.
 
 ## Distribution Maintenance
 
-The self-contained EXE bundles .NET 10.0.14; users do not need to install .NET.
+New builds of the self-contained EXE bundle .NET 10.0.15; users do not need to install .NET.
 Update `RuntimeFrameworkVersion` in the WPF project and rebuild the distribution
 when installing runtime security updates.
 
